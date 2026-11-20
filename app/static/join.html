@@ -37,9 +37,10 @@
   textarea { min-height:80px; resize:vertical; }
   [hidden] { display:none !important; }
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
-<header><a href="/"><svg viewBox="0 0 120 120" width="28" height="28" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>TanysTap</a><a class="small" href="/">← Назад</a></header>
+<header><a href="/"><svg viewBox="0 0 120 120" width="28" height="28" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>TanysTap</a><span style="display:flex;gap:10px;align-items:center"><span id="lng"></span><a class="small" href="/">← Назад</a></span></header>
 <main>
   <section id="auth">
     <h1>Добро пожаловать</h1>
@@ -48,14 +49,14 @@
     <form id="reg">
       <div class="steps"><i class="on"></i><i></i></div>
       <label>Имя и фамилия</label><input name="name" required autocomplete="name">
-      <label>Логин</label><input name="login" required autocomplete="username" placeholder="телефон или email">
-      <div class="hint">По логину и паролю вы войдёте с любого телефона или браузера.</div>
+      <label>Телефон или email</label><input name="login" required autocomplete="username" placeholder="+7 701 123 45 67 или name@mail.kz">
+      <div class="hint">Телефон только в формате +7. Номер или почта сразу появятся в ваших контактах, а по ним и паролю вы войдёте с любого устройства.</div>
       <label>Пароль</label><input name="password" type="password" required minlength="4" autocomplete="new-password">
       <button class="btn" type="submit">Далее</button>
       <div class="err" id="reg-err"></div>
     </form>
     <form id="login" hidden>
-      <label>Логин</label><input name="login" required autocomplete="username" placeholder="телефон или email">
+      <label>Телефон или email</label><input name="login" required autocomplete="username" placeholder="+7 701 123 45 67 или name@mail.kz">
       <label>Пароль</label><input name="password" type="password" required autocomplete="current-password">
       <button class="btn" type="submit">Войти</button>
       <div class="err" id="login-err"></div>
@@ -81,6 +82,7 @@
   </section>
 </main>
 <script>
+document.getElementById("lng").append(ttLangSwitch());
 const GOALS = {job:"Найти работу", hire:"Нанять людей", find_mentor:"Найти ментора", mentor:"Стать ментором", cofounder:"Найти кофаундера", exchange:"Обмен опытом"};
 const qp = new URLSearchParams(location.search);
 const nextRaw = qp.get("next") || "/app";
@@ -100,8 +102,17 @@ async function post(url, body) {
   return d;
 }
 function step2() { $("auth").hidden = true; $("profile").hidden = false; window.scrollTo(0, 0); }
+function loginError(v) {
+  v = v.trim();
+  if (v.includes("@")) return /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(v) ? "" : "Проверьте email: например name@mail.kz";
+  return /^\+7\d{10}$/.test(v.replace(/[\s\-()]/g, "")) ? "" : "Номер телефона должен начинаться с +7 и содержать 11 цифр, например +7 701 123 45 67";
+}
+document.querySelectorAll("[name=login]").forEach(i => i.addEventListener("input", () => {
+  const v = i.value; if (/^[0-9]/.test(v)) i.value = "+7 " + v.replace(/^[78]/, "");  // номер пишется сразу с +7
+}));
 $("reg").onsubmit = async e => {
   e.preventDefault(); const f = e.target; $("reg-err").textContent = "";
+  const le = loginError(f.elements["login"].value); if (le) { $("reg-err").textContent = le; return; }
   try {
     const d = await post("/api/register", {login: f.elements["login"].value, password: f.elements["password"].value, session_id: store.get("sid")});
     store.set("sid", d.session_id); pendingName = f.elements["name"].value.trim();

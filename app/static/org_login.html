@@ -23,6 +23,7 @@
   .sub { color:var(--muted); font-size:14px; line-height:1.5; }
   a.back { display:block; text-align:center; margin-top:16px; color:var(--muted); font-size:14px; text-decoration:none; }
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <main><form class="box" id="f">
@@ -33,9 +34,11 @@
   <label>Пароль</label><input name="password" type="password" required autocomplete="current-password">
   <button class="btn" type="submit">Войти</button>
   <div class="err" id="err"></div>
+  <div id="lng" style="text-align:center;margin-top:14px"></div>
   <a class="back" href="/">← На главную</a>
 </form></main>
 <script>
+document.getElementById("lng").append(ttLangSwitch());
 document.getElementById("f").onsubmit = async e => {
   e.preventDefault(); const f = e.target, err = document.getElementById("err"); err.textContent = "";
   const r = await fetch("/api/org/login", {method: "POST", headers: {"Content-Type": "application/json"},

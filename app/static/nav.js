@@ -68,10 +68,12 @@
       <div id="tt-goals"></div>
       <div class="tt-sec">Ещё</div>
       ${item("/setup", "badge", "Мой NFC-бейдж")}
+      <div class="tt-sec">Язык</div><div id="tt-lang" style="padding:4px 12px 8px"></div>
       <a class="tt-item" href="#" id="tt-logout"><svg viewBox="0 0 24 24">${I.out}</svg><span>Выйти</span></a>
     </div>
   </aside>`;
   document.body.appendChild(root);
+  if (window.ttLangSwitch) document.getElementById("tt-lang").append(ttLangSwitch());
 
   const btn = document.createElement("button");
   btn.className = "tt-dots";

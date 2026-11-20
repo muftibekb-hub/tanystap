@@ -34,7 +34,9 @@
   .tabs { display:flex; gap:6px; margin-bottom:10px; }
   .tabs button { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; font-size:13px; cursor:pointer; color:var(--ink); }
   .tabs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+.botb{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:999px;background:#FFF1DC;color:#8A5300;margin-left:6px;vertical-align:middle;text-transform:uppercase}
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <header><a class="brand" href="/app"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></a></header>
@@ -59,6 +61,7 @@ function ago(ts) {
   if (s < 86400) return new Date(ts * 1000).toLocaleTimeString("ru", {hour: "2-digit", minute: "2-digit"});
   return new Date(ts * 1000).toLocaleDateString("ru", {day: "numeric", month: "short"});
 }
+const botMark = () => { const b = document.createElement("span"); b.className = "botb"; b.textContent = "бот"; return b; };
 async function load(mark) {
   const list = document.getElementById("list");
   if (!sid) { list.innerHTML = '<div class="empty">Сначала <a href="/join">зарегистрируйтесь</a>.</div>'; return; }
@@ -69,7 +72,7 @@ async function load(mark) {
     const c = e.card, a = el("a", "item" + (e.new ? " new" : ""));
     a.href = e.type === "message" ? "/chat/" + encodeURIComponent(c.id) : "/p/" + encodeURIComponent(c.id) + "?view=1";
     const body = el("div", "body");
-    const title = el("div", "nm"); title.append(document.createTextNode(c.name + (e.type === "tap" ? " тапнул(а) ваш бейдж" : " написал(а) вам")));
+    const title = el("div", "nm"); title.append(document.createTextNode(c.name)); if (c.bot) title.append(botMark()); title.append(document.createTextNode(e.type === "tap" ? " тапнул(а) ваш бейдж" : " написал(а) вам"));
     body.append(title, el("div", e.type === "message" ? "pv" : "rl", e.type === "message" ? e.text : [c.role, c.company].filter(Boolean).join(" · ")));
     const side = el("div", "side"); side.appendChild(el("div", "tm", ago(e.ts)));
     a.append(av(c), body, side);

@@ -192,6 +192,15 @@ class Recommender:
             "common_interests": [x for x in b["interests"] if x.lower() in q["_interests"]],
         }
 
+    def remove(self, ids: set[str]) -> None:
+        """Убрать живые анкеты (например, ботов) и пересобрать индекс."""
+        self.profiles = [p for p in self.profiles if p["id"] not in ids]
+        self.by_id = {p["id"]: i for i, p in enumerate(self.profiles)}
+        self.X = self.vec.transform([profile_text(x) for x in self.profiles])
+        if self.live_path:
+            live = [{k: v for k, v in x.items() if not k.startswith("_")} for x in self.profiles if x.get("live")]
+            self.live_path.write_text(json.dumps(live, ensure_ascii=False), encoding="utf-8")
+
     def mutual_matrix(self, ids: list[str]) -> np.ndarray:
         """Взаимная совместимость (0..1) каждой пары из списка: для карты зала организатора."""
         idx = [self.by_id[i] for i in ids]

@@ -31,7 +31,9 @@
   input { flex:1; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; }
   button { padding:10px 16px; border:0; border-radius:8px; background:var(--ink); color:#fff; font-weight:600; font-size:14px; cursor:pointer; }
   .info { color:var(--muted); font-size:14px; padding:24px 0; text-align:center; line-height:1.5; }
+.botb{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:999px;background:#FFF1DC;color:#8A5300;margin-left:6px;vertical-align:middle;text-transform:uppercase}
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <header>
@@ -48,7 +50,7 @@
 const pid = location.pathname.split("/").pop();
 const sid = localStorage.getItem("sid") || "";
 let meId = null, peerShown = false;
-const NET = {linkedin:"LinkedIn", facebook:"Facebook", tiktok:"TikTok", instagram:"Instagram", telegram:"Telegram", whatsapp:"WhatsApp"};
+const NET = {linkedin:"LinkedIn", facebook:"Facebook", tiktok:"TikTok", instagram:"Instagram", telegram:"Telegram", whatsapp:"WhatsApp",phone:"Телефон",email:"Email"};
 
 function renderPeer(p) {
   const box = document.getElementById("peer");
@@ -57,7 +59,7 @@ function renderPeer(p) {
   if (p.avatar) { const img = document.createElement("img"); img.src = p.avatar; img.alt = ""; av.appendChild(img); }
   else av.textContent = (p.name || "?").slice(0, 1);
   const info = document.createElement("div");
-  const n = document.createElement("div"); n.className = "pn"; const nl = document.createElement("a"); nl.href = "/p/" + encodeURIComponent(p.id) + "?view=1"; nl.textContent = p.name + " ›"; n.appendChild(nl);
+  const n = document.createElement("div"); n.className = "pn"; const nl = document.createElement("a"); nl.href = "/p/" + encodeURIComponent(p.id) + "?view=1"; nl.textContent = p.name + " ›"; n.appendChild(nl); if (p.bot) { const bb = document.createElement("span"); bb.className = "botb"; bb.textContent = "бот"; n.appendChild(bb); }
   const m = document.createElement("div"); m.className = "pm"; m.textContent = [p.role, p.company].filter(Boolean).join(" · ");
   info.append(n, m);
   const soc = document.createElement("div"); soc.className = "soc";

@@ -33,9 +33,11 @@
   .go { margin-top:auto; padding-top:8px; font-size:14px; font-weight:600; }
   .foot { margin-top:30px; color:#8A97AD; font-size:12px; text-align:center; }
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <main>
+  <div id="lng" style="position:absolute;top:16px;right:16px"></div>
   <div class="logo"><svg viewBox="0 0 120 120" width="46" height="46" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>TanysTap</div>
   <div class="tag">Приложите телефон к бейджу — и узнайте, зачем вам познакомиться.</div>
   <div class="choices">
@@ -55,6 +57,7 @@
   <div class="foot">TanysTap · AI for Smart Campus</div>
 </main>
 <script>
+document.getElementById("lng").append(ttLangSwitch());
 try { if (localStorage.getItem("sid")) document.getElementById("guest").href = "/app"; } catch (e) {}
 </script>
 </body>

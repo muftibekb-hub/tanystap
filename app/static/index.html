@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
-<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}</style>
+<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}.botb{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:999px;background:#FFF1DC;color:#8A5300;margin-left:6px;vertical-align:middle;text-transform:uppercase}
+</style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TanysTap — умный нетворкинг</title>
@@ -50,6 +51,7 @@
   @media (max-width:760px){ main { padding:14px; gap:14px; } .panel { padding:16px; } .top { flex-wrap:wrap; } .score { margin-left:0; text-align:left; } .bars { grid-template-columns:1fr; } .slot { margin-left:0; } .langs button { padding:5px 8px; } }
   a.dash { color:var(--acc); font-size:14px; text-decoration:none; margin-right:12px; }
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <header>
@@ -106,7 +108,7 @@ function applyLang(){
   document.querySelectorAll(".langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===lang));
   if(last) render(last);
 }
-document.querySelectorAll(".langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l; store.set("lang",lang); applyLang(); window.ttNavSetLang&&ttNavSetLang(lang); if(last) submit();});
+document.querySelectorAll(".langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l; store.set("lang",lang); location.reload();});
 
 $("#demo").onclick=()=>{
   const f=$("#f");
@@ -150,7 +152,7 @@ function render(d){
     const bars=Object.entries(t.bk).map(([k,v])=>`<div>${v}<div class="bar"><i style="width:${Math.round((r.breakdown[k]||0)*100)}%"></i></div></div>`).join("");
     return `<div class="card">
       <div class="top"><div class="ava">${esc(init)}</div>
-        <div><div class="name">${esc(p.name)}<span class="badge">${esc(t.goals[p.goal])}</span></div>
+        <div><div class="name">${esc(p.name)}${p.bot?'<span class="botb">бот</span>':""}<span class="badge">${esc(t.goals[p.goal])}</span></div>
         <div class="meta">${esc(p.role)}${p.company?" · "+esc(p.company):""} · ${p.experience} ${t.exp_y}</div></div>
         <div class="score"><b>${Math.round(r.score*100)}%</b>${t.forYou} ${Math.round(r.for_you*100)} · ${t.forThem} ${Math.round(r.for_them*100)}</div></div>
       <div class="why">${esc(r.why)}</div>
@@ -161,7 +163,16 @@ function render(d){
         <button class="met" onclick="fb('${p.id}','met')">${t.met}</button>
         <button class="no" onclick="askReason('${p.id}')">${t.no}</button>
         ${r.meeting_slot?`<span class="slot">🕑 ${t.slot}${r.meeting_slot}</span>`:""}
-      </div></div>`;}).join("")+metBox(d.met_list||[]);
+      </div></div>`;}).join("")+`<div id="booths"></div>`+metBox(d.met_list||[]);
+  loadBooths();
+}
+async function loadBooths(){
+  try{
+    const r=await fetch(`/api/partners?session_id=${encodeURIComponent(sid)}&lang=${lang}`).then(r=>r.json());
+    if(!r.booths||!r.booths.length) return;
+    $("#booths").innerHTML=`<div class="card"><div class="name">Стенды партнёров для вас</div><div class="meta">Подойдите к этим стендам: они подходят под вашу цель и навыки.</div>`+
+      r.booths.map(b=>`<div style="display:flex;gap:12px;align-items:flex-start;margin-top:14px"><div class="ava" style="border-radius:12px">${esc(b.name.slice(0,1))}</div><div style="flex:1;min-width:0"><div style="font-weight:600">${esc(b.name)} <span class="meta"> · <span>${esc(b.zone)}</span></span></div><div class="meta">${esc(b.about)}</div><div class="tags">${b.goal_fit?`<span class="tag hit">Подходит по цели</span>`:""}${b.tags.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}</div></div><div class="score"><b>${Math.round(b.score*100)}%</b></div></div>`).join("")+`</div>`;
+  }catch(e){}
 }
 const X={
  ru:{myBadge:"Ваш NFC-бейдж",badgeHint:"Запишите эту ссылку на метку. Прикладывая телефон к чужому бейджу, вы увидите совместимость.",writeTag:"Записать на NFC-метку",copy2:"Скопировать ссылку",metTitle:"Мои знакомства",metNone:"Пока никого. Прикладывайте телефон к бейджам."},

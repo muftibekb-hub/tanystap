@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
-<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}</style>
+<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}.botb{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:999px;background:#FFF1DC;color:#8A5300;margin-left:6px;vertical-align:middle;text-transform:uppercase}
+</style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TanysTap — бейдж</title>
@@ -23,6 +24,7 @@
   .btn.ghost { background:var(--acc2); color:var(--acc); margin-top:8px; }
   .muted { color:var(--muted); }
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <div class="wrap"><div class="brand" style="display:none;align-items:center;gap:8px;"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span style="color:#0B1E3F">TanysTap</span> · NFC</div><div id="out" class="card muted">…</div></div>
@@ -43,7 +45,7 @@ const lang=store.get("lang")||"ru", t=T[lang], sid=store.get("sid")||"", pid=loc
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const out=document.getElementById("out");
 const QP=new URLSearchParams(location.search), SRC=QP.get("from")==="list"?"browse":(QP.get("view")?"view":"tap");
-const NET={linkedin:"LinkedIn",facebook:"Facebook",tiktok:"TikTok",instagram:"Instagram",telegram:"Telegram",whatsapp:"WhatsApp"};
+const NET={linkedin:"LinkedIn",facebook:"Facebook",tiktok:"TikTok",instagram:"Instagram",telegram:"Telegram",whatsapp:"WhatsApp",phone:"Телефон",email:"Email"};
 function avatarHtml(c){ return c.avatar?`<img src="${c.avatar}" alt="" style="width:88px;height:88px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;">`:""; }
 function bgHtml(b){ if(!b) return ""; const st=(b.stack||[]).join(", "); return `<div style="margin-top:14px;text-align:left;border-top:1px solid #DDE3EE;padding-top:12px;font-size:14px;line-height:1.5;"><div style="font-weight:600;margin-bottom:4px;">Бэкграунд</div>${b.experience!=null?`<div>Опыт: ${b.experience} лет${b.company?" · "+esc(b.company):""}</div>`:""}${st?`<div>Стек: ${esc(st)}</div>`:""}${b.about?`<div style="color:#5A6B8C">${esc(b.about)}</div>`:""}</div>`; }
 function socialsHtml(c){ const e=Object.entries(c.socials||{}); return e.length?`<div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">${e.map(([k,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener" style="font-size:14px;font-weight:600;border:1px solid #0B1E3F;border-radius:10px;padding:9px 14px;color:#0B1E3F;text-decoration:none;">${NET[k]||k}</a>`).join("")}</div>`:""; }
@@ -56,7 +58,7 @@ fetch("/api/pair",{method:"POST",headers:{"Content-Type":"application/json"},bod
   out.className="card";
   out.innerHTML=`<div class="ring" style="background:conic-gradient(${col} ${pct*3.6}deg,#eef0f5 0)"><div>${pct}%</div></div>
     <div class="verdict" style="color:${col}">${pct>=60?t.hi:pct>=45?t.mid:t.lo}</div>
-    ${avatarHtml(c)}<div class="name">${esc(p.name)}</div><div class="meta">${esc(p.role)}${p.company?" · "+esc(p.company):""} · ${p.experience} ${t.exp}</div>
+    ${avatarHtml(c)}<div class="name">${esc(p.name)}${c.bot?'<span class="botb">бот</span>':""}</div>${c.bot?'<div class="meta" style="color:#8A5300">Это демо-бот TanysTap, а не живой участник</div>':""}<div class="meta">${esc(p.role)}${p.company?" · "+esc(p.company):""} · ${p.experience} ${t.exp}</div>
     <div class="why">${esc(r.why)}</div>${cp?`<div style="margin:10px 0 0;font-size:14px;line-height:1.6;"><div>Подходит вам ${esc(cp.them.label)}: <b>${cp.them.score}%</b></div><div>Вы подходите ему ${esc(cp.you.label)}: <b>${cp.you.score}%</b></div></div>`:""}<div class="ice">💬 ${esc(r.icebreaker)}</div>${socialsHtml(c)}${bgHtml(c.background)}
     ${r.meeting_slot?`<div class="slot">🕑 ${t.slot}${r.meeting_slot}</div>`:""}
     ${r.chat?`<a class="btn" href="/chat/${esc(c.id)}" style="text-align:center;text-decoration:none;">Написать сообщение</a>`:`<div class="muted" style="font-size:13px;margin-top:14px">${SRC==="browse"?"Найдите этого человека и тапните его бейдж — откроется чат.":"Чат откроется, когда у вас обоих будет заполнена анкета."}</div>`}${SRC==="browse"?"":`<div class="muted" style="font-size:13px;margin-top:10px">Этот человек сохранён в разделе «Сообщения» — его профиль можно открыть снова в любой момент.</div>`}<button class="btn" id="met">${t.met}</button><a class="btn ghost" href="/messages">Все мои контакты</a><a class="btn ghost" href="/app">${t.more}</a>`;

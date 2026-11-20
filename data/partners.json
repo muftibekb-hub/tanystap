@@ -1,0 +1,295 @@
+[
+ {
+  "id": "b1",
+  "name": "BaiTech",
+  "about": {
+   "ru": "Финтех-платформа: платежи и кредитный скоринг.",
+   "kk": "Финтех-платформа: төлемдер және кредиттік скоринг.",
+   "en": "Fintech platform: payments and credit scoring."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "exchange"
+  ],
+  "tags": [
+   "python",
+   "java",
+   "go",
+   "финтех",
+   "fintech",
+   "backend",
+   "postgresql",
+   "kafka",
+   "ml"
+  ],
+  "zone": "Стенд 1"
+ },
+ {
+  "id": "b2",
+  "name": "Dala Analytics",
+  "about": {
+   "ru": "Аналитика данных для ритейла и агро.",
+   "kk": "Бөлшек сауда мен агроға арналған деректер аналитикасы.",
+   "en": "Data analytics for retail and agriculture."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "find_mentor"
+  ],
+  "tags": [
+   "sql",
+   "python",
+   "power bi",
+   "tableau",
+   "аналитика",
+   "analytics",
+   "data",
+   "ml",
+   "pandas"
+  ],
+  "zone": "Стенд 2"
+ },
+ {
+  "id": "b3",
+  "name": "Qazaq Cloud",
+  "about": {
+   "ru": "Облачная инфраструктура и DevOps как сервис.",
+   "kk": "Бұлттық инфрақұрылым және DevOps қызметі.",
+   "en": "Cloud infrastructure and DevOps as a service."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "exchange"
+  ],
+  "tags": [
+   "devops",
+   "kubernetes",
+   "docker",
+   "terraform",
+   "linux",
+   "aws",
+   "инфраструктура",
+   "sre"
+  ],
+  "zone": "Стенд 3"
+ },
+ {
+  "id": "b4",
+  "name": "Steppe Ventures",
+  "about": {
+   "ru": "Венчурный фонд pre-seed и seed стадий.",
+   "kk": "Pre-seed және seed кезеңіндегі венчурлық қор.",
+   "en": "Pre-seed and seed venture fund."
+  },
+  "goals": [
+   "cofounder",
+   "mentor",
+   "exchange"
+  ],
+  "tags": [
+   "стартапы",
+   "startups",
+   "инвестиции",
+   "бизнес",
+   "business",
+   "product",
+   "founder",
+   "pitch"
+  ],
+  "zone": "Стенд 4"
+ },
+ {
+  "id": "b5",
+  "name": "Astana Hub Mentors",
+  "about": {
+   "ru": "Менторская программа для студентов и джунов.",
+   "kk": "Студенттер мен джундарға арналған менторлық бағдарлама.",
+   "en": "Mentorship program for students and juniors."
+  },
+  "goals": [
+   "find_mentor",
+   "mentor"
+  ],
+  "tags": [
+   "карьера",
+   "career",
+   "python",
+   "frontend",
+   "backend",
+   "design",
+   "обучение",
+   "education"
+  ],
+  "zone": "Стенд 5"
+ },
+ {
+  "id": "b6",
+  "name": "Nomad Design Lab",
+  "about": {
+   "ru": "Продуктовый дизайн и UX-исследования.",
+   "kk": "Өнім дизайны және UX-зерттеулер.",
+   "en": "Product design and UX research."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "exchange"
+  ],
+  "tags": [
+   "figma",
+   "ux",
+   "ui",
+   "дизайн",
+   "design",
+   "research",
+   "product"
+  ],
+  "zone": "Стенд 6"
+ },
+ {
+  "id": "b7",
+  "name": "Shanyraq AI",
+  "about": {
+   "ru": "Языковые модели для казахского языка.",
+   "kk": "Қазақ тіліне арналған тілдік модельдер.",
+   "en": "Language models for the Kazakh language."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "cofounder"
+  ],
+  "tags": [
+   "llm",
+   "nlp",
+   "ml",
+   "pytorch",
+   "ai",
+   "python",
+   "нейросети",
+   "data science"
+  ],
+  "zone": "Стенд 7"
+ },
+ {
+  "id": "b8",
+  "name": "Kolesa Mobile",
+  "about": {
+   "ru": "Мобильная разработка и маркетплейсы.",
+   "kk": "Мобильді әзірлеу және маркетплейстер.",
+   "en": "Mobile development and marketplaces."
+  },
+  "goals": [
+   "hire",
+   "job"
+  ],
+  "tags": [
+   "kotlin",
+   "swift",
+   "flutter",
+   "android",
+   "ios",
+   "mobile",
+   "react native"
+  ],
+  "zone": "Стенд 8"
+ },
+ {
+  "id": "b9",
+  "name": "SecureKZ",
+  "about": {
+   "ru": "Кибербезопасность: SOC и пентест.",
+   "kk": "Киберқауіпсіздік: SOC және пентест.",
+   "en": "Cybersecurity: SOC and pentesting."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "find_mentor"
+  ],
+  "tags": [
+   "security",
+   "безопасность",
+   "pentest",
+   "soc",
+   "linux",
+   "network"
+  ],
+  "zone": "Стенд 9"
+ },
+ {
+  "id": "b10",
+  "name": "Campus Startup Club",
+  "about": {
+   "ru": "Клуб студенческих стартапов: команды и хакатоны.",
+   "kk": "Студенттік стартаптар клубы: командалар мен хакатондар.",
+   "en": "Student startup club: teams and hackathons."
+  },
+  "goals": [
+   "cofounder",
+   "exchange",
+   "find_mentor"
+  ],
+  "tags": [
+   "стартапы",
+   "startups",
+   "хакатоны",
+   "hackathon",
+   "team",
+   "product",
+   "маркетинг"
+  ],
+  "zone": "Стенд 10"
+ },
+ {
+  "id": "b11",
+  "name": "EduTech Qadam",
+  "about": {
+   "ru": "Образовательные платформы и AI-тьюторы.",
+   "kk": "Білім беру платформалары және AI-тьюторлар.",
+   "en": "Education platforms and AI tutors."
+  },
+  "goals": [
+   "hire",
+   "job",
+   "cofounder"
+  ],
+  "tags": [
+   "edtech",
+   "образование",
+   "education",
+   "ai",
+   "frontend",
+   "react",
+   "python"
+  ],
+  "zone": "Стенд 11"
+ },
+ {
+  "id": "b12",
+  "name": "QA Guild",
+  "about": {
+   "ru": "Сообщество тестировщиков и автотестов.",
+   "kk": "Тестілеушілер мен автотесттер қауымдастығы.",
+   "en": "Community of QA and test automation."
+  },
+  "goals": [
+   "exchange",
+   "find_mentor",
+   "mentor",
+   "job"
+  ],
+  "tags": [
+   "qa",
+   "тестирование",
+   "selenium",
+   "pytest",
+   "автотесты",
+   "testing"
+  ],
+  "zone": "Стенд 12"
+ }
+]

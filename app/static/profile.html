@@ -42,6 +42,7 @@
   .bg { margin-top:16px; text-align:left; font-size:14px; line-height:1.6; border-top:1px solid var(--line); padding-top:12px; }
   .bg b { font-weight:600; }
 </style>
+<script src="/static/i18n.js"></script>
 </head>
 <body>
 <header>
@@ -93,7 +94,9 @@
 <script>
 const sid = (() => { let v = localStorage.getItem("sid"); if (!v) { v = Math.random().toString(36).slice(2); localStorage.setItem("sid", v); } return v; })();
 const GOALS = {job:"Найти работу", hire:"Нанять", find_mentor:"Найти ментора", mentor:"Стать ментором", cofounder:"Найти кофаундера", exchange:"Обмен опытом"};
-const NETS = [["linkedin","LinkedIn","ник или ссылка"],["facebook","Facebook","ник или ссылка"],["tiktok","TikTok","ник"],["instagram","Instagram","ник"],["telegram","Telegram","ник"],["whatsapp","WhatsApp","+7 777 123 45 67"]];
+const NETS = [["linkedin","LinkedIn","ник или ссылка"],["facebook","Facebook","ник или ссылка"],["tiktok","TikTok","ник"],["instagram","Instagram","ник"],["telegram","Telegram","ник"],["whatsapp","WhatsApp","+7 701 123 45 67"],["phone","Телефон","+7 701 123 45 67"],["email","Email","name@mail.kz"]];
+const toInput = (k, v) => { v = v || ""; if (k === "whatsapp") return v.replace(/^https?:\/\/wa\.me\//, "+"); if (k === "phone") return v.replace(/^tel:/, ""); if (k === "email") return v.replace(/^mailto:/, ""); return v; };
+const okPhone = v => /^\+7\d{10}$/.test(v.replace(/[\s\-()]/g, ""));
 const f = document.getElementById("f");
 let avatar = "";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -101,7 +104,7 @@ const split = s => String(s || "").split(/[,;]/).map(x => x.trim()).filter(Boole
 
 f.elements["goal"].innerHTML = Object.entries(GOALS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
 document.getElementById("nets").innerHTML = NETS.map(([k, l, ph]) =>
-  `<div class="net"><span class="nl">${l}</span><input name="net_${k}" placeholder="${ph}"><label class="chk"><input type="checkbox" name="show_${k}" checked> показать</label></div>`).join("");
+  `<div class="net"><span class="nl">${l}</span><input name="net_${k}" placeholder="${ph}"${k === "whatsapp" || k === "phone" ? ' type="tel" inputmode="tel" data-kz' : k === "email" ? ' type="email"' : ""}><label class="chk"><input type="checkbox" name="show_${k}" checked> показать</label></div>`).join("");
 
 function updateAva() {
   const a = document.getElementById("ava");
@@ -146,7 +149,7 @@ async function load() {
     f.elements["show_compat"].checked = show.includes("compat");
     f.elements["show_background"].checked = show.includes("background");
     NETS.forEach(([k]) => {
-      f.elements["net_" + k].value = socials[k] || "";
+      f.elements["net_" + k].value = toInput(k, socials[k]);
       f.elements["show_" + k].checked = !(p.hide || []).includes(k);
     });
   }
@@ -178,6 +181,10 @@ f.addEventListener("submit", async e => {
   if (d.get("show_avatar")) show.push("avatar");
   if (d.get("show_compat")) show.push("compat");
   if (d.get("show_background")) show.push("background");
+  for (const k of ["whatsapp", "phone"]) {
+    const v = String(d.get("net_" + k) || "").trim();
+    if (v && !okPhone(v)) { msg.style.color = "var(--bad)"; msg.textContent = "Номер телефона должен начинаться с +7 и содержать 11 цифр, например +7 701 123 45 67"; f.elements["net_" + k].focus(); return; }
+  }
   NETS.forEach(([k]) => {
     socials[k] = d.get("net_" + k) || "";
     if (!d.get("show_" + k)) hide.push(k);
@@ -195,6 +202,11 @@ f.addEventListener("submit", async e => {
 });
 
 fetch(`/api/me?session_id=${encodeURIComponent(sid)}`).then(r => r.json()).then(r => { if (r.login) document.getElementById("mylogin").textContent = r.login; });
+f.querySelectorAll("[data-kz]").forEach(i => {
+  i.addEventListener("focus", () => { if (!i.value) i.value = "+7 "; });
+  i.addEventListener("blur", () => { if (i.value.trim() === "+7") i.value = ""; });
+  i.addEventListener("input", () => { if (i.value && !i.value.startsWith("+7")) i.value = "+7 " + i.value.replace(/^\+?7?/, "").replace(/^8/, ""); });
+});
 load();
 </script>
 <script src="/static/nav.js"></script>
