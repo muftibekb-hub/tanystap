@@ -87,7 +87,7 @@ async function load() {
   if (res.status === 403) {
     document.getElementById("send").style.display = "none";
     document.getElementById("log").replaceChildren();
-    err.textContent = "Чат откроется, когда вы или этот участник тапнете бейдж друг друга, и у обоих будет заполнена анкета.";
+    err.textContent = "Чат доступен только с зарегистрированными участниками. С анкетами из демо-базы переписываться нельзя.";
     return;
   }
   if (!res.ok) { err.textContent = "Не удалось открыть чат."; return; }

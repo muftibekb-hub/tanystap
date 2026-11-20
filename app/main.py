@@ -66,6 +66,11 @@ def kz_phone(v) -> str | None:
     return digits if re.fullmatch(r"\+7\d{10}", digits) else None
 
 
+def fmt_phone(p: str) -> str:
+    """+77011112233 -> +7 701 111 22 33"""
+    return f"{p[:2]} {p[2:5]} {p[5:8]} {p[8:10]} {p[10:12]}"
+
+
 def contact_errors(raw) -> str | None:
     raw = raw or {}
     for k in ("whatsapp", "phone"):
@@ -219,16 +224,25 @@ def save_profile(sid: str, prof: dict) -> dict:
 
 
 def chat_allowed(me: str, pid: str) -> bool:
-    """Чат открыт, если оба живые и хотя бы один сканировал другого."""
+    """Написать можно любому живому участнику (тап не обязателен). С анкетами демо-базы чата нет."""
     if me == pid or me not in rec.by_id or pid not in rec.by_id:
         return False
-    if not (rec.profiles[rec.by_id[me]].get("live") and rec.profiles[rec.by_id[pid]].get("live")):
-        return False
-    return (me, pid) in SCANS or (pid, me) in SCANS
+    return bool(rec.profiles[rec.by_id[me]].get("live") and rec.profiles[rec.by_id[pid]].get("live"))
+
+
+def peers_of(me: str) -> set:
+    """Все, с кем есть связь: тапы в любую сторону и переписка."""
+    out = {b for a, b in SCANS if a == me} | {a for a, b in SCANS if b == me}
+    for key, msgs in CHATS.items():
+        a, b = key.split("|")
+        if msgs and me in (a, b):
+            out.add(b if a == me else a)
+    out.discard(me)
+    return out
 
 
 def contacts_for(me: str) -> list:
-    peers = {b for a, b in SCANS if a == me} | {a for a, b in SCANS if b == me}
+    peers = peers_of(me)
     out = []
     for pid in peers:
         if pid in rec.by_id:
@@ -650,8 +664,7 @@ def unread(me: str, pid: str) -> int:
 def inbox_for(me: str) -> list:
     """Все, с кем есть связь через тап: последние сообщения и непрочитанные."""
     out = []
-    peers = {b for a, b in SCANS if a == me} | {a for a, b in SCANS if b == me}
-    for pid in peers:
+    for pid in peers_of(me):
         card = card_of(pid)
         if not card or pid == me:
             continue
@@ -709,7 +722,7 @@ def notifications():
 def counts():
     """Цифры на значках меню: непрочитанные сообщения и новые уведомления."""
     me = own_id(request.args.get("session_id", ""))
-    peers = {b for a, b in SCANS if a == me} | {a for a, b in SCANS if b == me}
+    peers = peers_of(me)
     seen = SEEN.get(me, 0)
     return jsonify({
         "messages": sum(unread(me, p) for p in peers),

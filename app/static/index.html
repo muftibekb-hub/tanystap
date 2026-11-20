@@ -44,7 +44,8 @@
   .tag.hit { border-color:var(--acc); color:var(--acc); }
   .actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; align-items:center; }
   .actions button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; cursor:pointer; font-size:13px; }
-  .actions .met { border-color:var(--ok); color:var(--ok); } .actions .no { border-color:var(--bad); color:var(--bad); }
+  .actions .met { border-color:var(--ok); color:var(--ok); }
+  .actions a.view { border:1px solid var(--acc); background:var(--acc); color:#fff; border-radius:8px; padding:7px 12px; font-size:13px; text-decoration:none; font-weight:600; } .actions .no { border-color:var(--bad); color:var(--bad); }
   .slot { margin-left:auto; font-size:13px; color:var(--ok); font-weight:600; }
   .empty { color:var(--muted); text-align:center; padding:60px 20px; }
   .info { color:var(--muted); font-size:13px; margin-bottom:12px; }
@@ -160,6 +161,7 @@ function render(d){
       <div class="bars">${bars}</div>
       <div class="tags">${[...p.stack,...p.interests].map(x=>`<span class="tag ${hit.has(x.toLowerCase())?"hit":""}">${esc(x)}</span>`).join("")}</div>
       <div class="actions" id="a-${p.id}">
+        <a class="view" href="/p/${encodeURIComponent(p.id)}?from=list">Посмотреть профиль</a>
         <button class="met" onclick="fb('${p.id}','met')">${t.met}</button>
         <button class="no" onclick="askReason('${p.id}')">${t.no}</button>
         ${r.meeting_slot?`<span class="slot">🕑 ${t.slot}${r.meeting_slot}</span>`:""}

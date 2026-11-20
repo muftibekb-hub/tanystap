@@ -42,7 +42,7 @@
 <header><a class="brand" href="/app"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></a></header>
 <main>
   <h1>Сообщения</h1>
-  <div class="sub">Здесь все, кого вы тапнули и кто тапнул вас. Откройте чат или профиль человека.</div>
+  <div class="sub">Здесь все, с кем вы переписываетесь, кого тапнули и кто тапнул вас. Откройте чат или профиль человека.</div>
   <div class="tabs" id="tabs"><button data-f="all" class="on">Все</button><button data-f="unread">Непрочитанные</button><button data-f="mine">Я тапнул</button><button data-f="me">Тапнули меня</button></div>
   <div id="list"></div>
 </main>
@@ -80,7 +80,7 @@ function render() {
     const body = el("div", "body");
     const nmEl = el("div", "nm", c.name); if (c.bot) nmEl.append(botMark());
     body.append(nmEl, el("div", "rl", [c.role, c.company].filter(Boolean).join(" · ")));
-    const how = t.i_tapped && t.tapped_me ? "Вы тапнули друг друга" : t.i_tapped ? "Вы тапнули" : "Тапнул(а) вас";
+    const how = t.i_tapped && t.tapped_me ? "Вы тапнули друг друга" : t.i_tapped ? "Вы тапнули" : t.tapped_me ? "Тапнул(а) вас" : "Начните переписку";
     const pv = el("div", "pv" + (t.unread ? " unread" : ""), t.last ? (t.last.mine ? "Вы: " : "") + t.last.text : how);
     body.appendChild(pv);
     const acts = el("div", "acts");
