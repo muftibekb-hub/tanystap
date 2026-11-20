@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TanysTap — бейдж</title>
+<style>
+  :root { --bg:#FFFFFF; --card:#FFFFFF; --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc:#0B1E3F; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; --mid:#5A6B8C; --low:#8A97AD; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Inter,sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width:460px; margin:0 auto; padding:20px; }
+  .brand { font-weight:700; margin-bottom:16px; } .brand span { color:var(--acc); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; text-align:center; }
+  .ring { width:150px; height:150px; border-radius:50%; margin:0 auto 14px; display:grid; place-items:center; }
+  .ring div { width:122px; height:122px; border-radius:50%; background:#fff; display:grid; place-items:center; font-size:36px; font-weight:800; }
+  .verdict { font-size:18px; font-weight:700; margin-bottom:4px; }
+  .name { font-size:22px; font-weight:700; margin-top:18px; } .meta { color:var(--muted); font-size:14px; margin-top:4px; }
+  .why { text-align:left; margin:18px 0 12px; line-height:1.5; }
+  .ice { text-align:left; background:#f8f9fc; border-left:3px solid var(--acc); padding:12px; border-radius:8px; font-size:15px; }
+  .slot { color:var(--ok); font-weight:600; margin-top:12px; }
+  .btn { display:block; width:100%; margin-top:16px; padding:14px; border:0; border-radius:12px; background:var(--acc); color:#fff; font-size:16px; font-weight:600; cursor:pointer; text-decoration:none; text-align:center; box-sizing:border-box; }
+  .btn.ghost { background:var(--acc2); color:var(--acc); margin-top:8px; }
+  .muted { color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="brand" style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span style="color:#0B1E3F">TanysTap</span> · NFC</div><div id="out" class="card muted">…</div></div>
+<script>
+const T={
+  ru:{need:"Чтобы узнать, насколько вам стоит познакомиться, сначала заполните анкету (1 минута).",fill:"Заполнить анкету",
+      hi:"Обязательно познакомьтесь!",mid:"Есть о чём поговорить",lo:"Скорее не ваш профиль",met:"✓ Мы познакомились",done:"Отмечено! Удачного нетворкинга",
+      more:"Мои топ-5 рекомендаций",slot:"Свободный слот для встречи: ",exp:"лет опыта",err:"Бейдж не найден"},
+  kk:{need:"Танысу қаншалықты пайдалы екенін білу үшін алдымен сауалнаманы толтырыңыз (1 минут).",fill:"Сауалнаманы толтыру",
+      hi:"Міндетті түрде танысыңыз!",mid:"Әңгімелесетін тақырып бар",lo:"Сізге онша сәйкес емес",met:"✓ Таныстық",done:"Белгіленді! Сәтті нетворкинг",
+      more:"Менің топ-5 ұсынысым",slot:"Кездесуге бос уақыт: ",exp:"жыл тәжірибе",err:"Бейдж табылмады"},
+  en:{need:"Fill in your profile first (1 minute) to see how well you match.",fill:"Fill in profile",
+      hi:"You should definitely meet!",mid:"You have things to talk about",lo:"Probably not your match",met:"✓ We met",done:"Saved! Happy networking",
+      more:"My top 5 matches",slot:"Free slot to meet: ",exp:"yrs experience",err:"Badge not found"},
+};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}}};
+const lang=store.get("lang")||"ru", t=T[lang], sid=store.get("sid")||"", pid=location.pathname.split("/").pop();
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const out=document.getElementById("out");
+const NET={linkedin:"LinkedIn",facebook:"Facebook",tiktok:"TikTok",instagram:"Instagram",telegram:"Telegram",whatsapp:"WhatsApp"};
+function avatarHtml(c){ return c.avatar?`<img src="${c.avatar}" alt="" style="width:88px;height:88px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;">`:""; }
+function bgHtml(b){ if(!b) return ""; const st=(b.stack||[]).join(", "); return `<div style="margin-top:14px;text-align:left;border-top:1px solid #DDE3EE;padding-top:12px;font-size:14px;line-height:1.5;"><div style="font-weight:600;margin-bottom:4px;">Бэкграунд</div>${b.experience!=null?`<div>Опыт: ${b.experience} лет${b.company?" · "+esc(b.company):""}</div>`:""}${st?`<div>Стек: ${esc(st)}</div>`:""}${b.about?`<div style="color:#5A6B8C">${esc(b.about)}</div>`:""}</div>`; }
+function socialsHtml(c){ const e=Object.entries(c.socials||{}); return e.length?`<div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">${e.map(([k,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener" style="font-size:13px;border:1px solid #DDE3EE;border-radius:8px;padding:6px 10px;color:#0B1E3F;text-decoration:none;">${NET[k]||k}</a>`).join("")}</div>`:""; }
+fetch("/api/pair",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:sid,target_id:pid,lang})})
+.then(r=>r.json()).then(r=>{
+  if(r.need_profile){ out.innerHTML=`<p>${t.need}</p><a class="btn" href="/?next=${encodeURIComponent(location.pathname)}">${t.fill}</a>`; return; }
+  if(r.own){ out.className="card"; out.innerHTML=`<div class="verdict">${({ru:"Это ваш собственный бейдж",kk:"Бұл сіздің бейдж",en:"This is your own badge"})[lang]}</div><p class="muted">${({ru:"Дайте этот бейдж другому участнику: пусть приложит телефон и увидит совместимость с вами.",kk:"Бұл бейджді басқа қатысушыға беріңіз: ол телефонын тигізіп, сізбен үйлесімділікті көрсін.",en:"Let another participant tap this badge to see how well you match."})[lang]}</p><a class="btn" href="/setup" style="text-align:center;text-decoration:none;">${({ru:"Настроить метку",kk:"Метканы баптау",en:"Set up tag"})[lang]}</a><a class="btn ghost" href="/">${({ru:"Назад",kk:"Артқа",en:"Back"})[lang]}</a>`; return; }
+  if(r.error){ out.textContent=t.err; return; }
+  const pct=Math.round(r.score*100), col=pct>=60?"var(--ok)":pct>=45?"var(--mid)":"var(--low)", p=r.profile, c=r.card||{}, cp=r.compat;
+  out.className="card";
+  out.innerHTML=`<div class="ring" style="background:conic-gradient(${col} ${pct*3.6}deg,#eef0f5 0)"><div>${pct}%</div></div>
+    <div class="verdict" style="color:${col}">${pct>=60?t.hi:pct>=45?t.mid:t.lo}</div>
+    ${avatarHtml(c)}<div class="name">${esc(p.name)}</div><div class="meta">${esc(p.role)}${p.company?" · "+esc(p.company):""} · ${p.experience} ${t.exp}</div>
+    <div class="why">${esc(r.why)}</div>${cp?`<div style="margin:10px 0 0;font-size:14px;line-height:1.6;"><div>Подходит вам ${esc(cp.them.label)}: <b>${cp.them.score}%</b></div><div>Вы подходите ему ${esc(cp.you.label)}: <b>${cp.you.score}%</b></div></div>`:""}<div class="ice">💬 ${esc(r.icebreaker)}</div>${socialsHtml(c)}${bgHtml(c.background)}
+    ${r.meeting_slot?`<div class="slot">🕑 ${t.slot}${r.meeting_slot}</div>`:""}
+    ${r.chat?`<a class="btn" href="/chat/${esc(c.id)}" style="text-align:center;text-decoration:none;">Написать в чат</a>`:""}<button class="btn" id="met">${t.met}</button><a class="btn ghost" href="/">${t.more}</a>`;
+  document.getElementById("met").onclick=e=>{
+    fetch("/api/feedback",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:sid,target_id:pid,verdict:"met"})});
+    e.target.textContent=t.done; e.target.disabled=true; e.target.style.background="var(--ok)";
+  };
+}).catch(()=>out.textContent=t.err);
+</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TanysTap — умный нетворкинг</title>
+<style>
+  :root { --bg:#FFFFFF; --card:#FFFFFF; --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc:#0B1E3F; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; --mid:#5A6B8C; --low:#8A97AD; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Inter,sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; background:var(--card); border-bottom:1px solid var(--line); }
+  header b { font-size:20px; } header b span { color:var(--acc); }
+  .langs button { border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:8px; cursor:pointer; margin-left:4px; }
+  .langs button.on { background:var(--acc); color:#fff; border-color:var(--acc); }
+  main { max-width:1180px; margin:0 auto; padding:24px; display:grid; grid-template-columns:380px 1fr; gap:24px; }
+  @media (max-width:900px){ main { grid-template-columns:1fr; } }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  h2 { margin:0 0 4px; font-size:18px; } .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  label { display:block; font-size:13px; font-weight:600; margin:12px 0 6px; }
+  input, select, textarea { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:14px; }
+  textarea { min-height:80px; resize:vertical; }
+  .row { display:grid; grid-template-columns:1fr 110px; gap:10px; }
+  .slots { display:flex; flex-wrap:wrap; gap:6px; }
+  .slots label { display:inline-flex; gap:6px; align-items:center; margin:0; font-weight:400; border:1px solid var(--line); border-radius:8px; padding:5px 8px; cursor:pointer; }
+  .slots input { width:auto; }
+  .btn { width:100%; margin-top:18px; padding:12px; border:0; border-radius:10px; background:var(--acc); color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn.ghost { background:var(--acc2); color:var(--acc); margin-top:8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:14px; }
+  .top { display:flex; gap:14px; align-items:flex-start; }
+  .ava { width:46px; height:46px; border-radius:50%; background:var(--acc2); color:var(--acc); display:grid; place-items:center; font-weight:700; flex:none; }
+  .name { font-weight:700; font-size:16px; } .meta { color:var(--muted); font-size:13px; margin-top:2px; }
+  .badge { display:inline-block; font-size:12px; padding:3px 8px; border-radius:999px; background:var(--acc2); color:var(--acc); margin-left:6px; font-weight:600; }
+  .score { margin-left:auto; text-align:right; font-size:12px; color:var(--muted); }
+  .score b { display:block; font-size:22px; color:var(--ink); }
+  .why { margin:12px 0 8px; line-height:1.45; }
+  .ice { background:#f8f9fc; border-left:3px solid var(--acc); padding:10px 12px; border-radius:8px; font-size:14px; display:flex; gap:10px; align-items:center; }
+  .ice span { flex:1; } .ice button { border:0; background:none; color:var(--acc); cursor:pointer; font-weight:600; }
+  .bars { display:grid; grid-template-columns:repeat(2,1fr); gap:6px 16px; margin-top:12px; font-size:12px; color:var(--muted); }
+  .bar { height:6px; background:var(--line); border-radius:3px; margin-top:3px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--acc); }
+  .tags { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; } .tag { font-size:12px; border:1px solid var(--line); border-radius:6px; padding:2px 7px; }
+  .tag.hit { border-color:var(--acc); color:var(--acc); }
+  .actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; align-items:center; }
+  .actions button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; cursor:pointer; font-size:13px; }
+  .actions .met { border-color:var(--ok); color:var(--ok); } .actions .no { border-color:var(--bad); color:var(--bad); }
+  .slot { margin-left:auto; font-size:13px; color:var(--ok); font-weight:600; }
+  .empty { color:var(--muted); text-align:center; padding:60px 20px; }
+  .info { color:var(--muted); font-size:13px; margin-bottom:12px; }
+  a.dash { color:var(--acc); font-size:14px; text-decoration:none; margin-right:12px; }
+</style>
+</head>
+<body>
+<header>
+  <b style="display:flex;align-items:center;gap:10px;"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span style="color:#0B1E3F">TanysTap</span></b>
+  <div><a class="dash" href="/profile">Профиль</a><a class="dash" href="/dashboard" data-i="dash"></a><span class="langs"><button data-l="kk">ҚАЗ</button><button data-l="ru">РУС</button><button data-l="en">ENG</button></span></div>
+</header>
+<main>
+  <form class="panel" id="f">
+    <h2 data-i="title"></h2><div class="sub" data-i="subtitle"></div>
+    <label data-i="name"></label><input name="name" required>
+    <div class="row">
+      <div><label data-i="role"></label><input name="role" required data-ph="role_ph"></div>
+      <div><label data-i="exp"></label><input name="experience" type="number" min="0" max="40" value="2"></div>
+    </div>
+    <label data-i="stack"></label><input name="stack" data-ph="stack_ph" required>
+    <label data-i="interests"></label><input name="interests" data-ph="interests_ph">
+    <label data-i="goal"></label>
+    <select name="goal" id="goal"></select>
+    <label data-i="about"></label><textarea name="about" data-ph="about_ph"></textarea>
+    <label data-i="slots"></label><div class="slots" id="slots"></div>
+    <button class="btn" type="submit" data-i="go"></button>
+    <button class="btn ghost" type="button" id="demo" data-i="demo"></button>
+  </form>
+  <section id="out"><div class="panel empty" data-i="empty"></div></section>
+</main>
+<script>
+const T = {
+  ru:{dash:"Дашборд организатора",title:"Ваша анкета",subtitle:"Заполните за минуту и получите 5 человек, с кем стоит познакомиться",name:"Имя",role:"Роль",role_ph:"Backend-разработчик",exp:"Опыт, лет",stack:"Стек (через запятую)",stack_ph:"Python, FastAPI, PostgreSQL",interests:"Интересы (через запятую)",interests_ph:"финтех, LLM, стартапы",goal:"Цель",about:"О себе",about_ph:"Пара предложений о себе и что ищете",slots:"Свободное время для встреч 1:1",go:"Подобрать знакомства",demo:"Заполнить пример",empty:"Здесь появятся ваши рекомендации",
+      goals:{job:"Найти работу",hire:"Нанять",find_mentor:"Найти ментора",mentor:"Стать ментором",cofounder:"Найти кофаундера",exchange:"Обмен опытом"},
+      forYou:"польза вам",forThem:"польза им",copy:"Копировать",met:"✓ Познакомились",no:"✕ Не подошло",reasonQ:"Почему не подошло?",r_goal:"Не та цель",r_role:"Не то направление",r_other:"Другое",
+      found:(n,ms)=>`Топ-5 из базы за ${ms} мс. Уже познакомились: ${n}`,slot:"Встреча в ",exp_y:"лет опыта",bk:{goal:"Цели",role:"Направление",stack:"Стек",interests:"Интересы"},err:"Ошибка сервера"},
+  kk:{dash:"Ұйымдастырушы панелі",title:"Сауалнамаңыз",subtitle:"Бір минутта толтырып, танысуға тұрарлық 5 адамды алыңыз",name:"Аты",role:"Рөлі",role_ph:"Backend-әзірлеуші",exp:"Тәжірибе, жыл",stack:"Стек (үтір арқылы)",stack_ph:"Python, FastAPI, PostgreSQL",interests:"Қызығушылықтар (үтір арқылы)",interests_ph:"финтех, LLM, стартаптар",goal:"Мақсат",about:"Өзім туралы",about_ph:"Өзіңіз және не іздейтініңіз туралы бірер сөйлем",slots:"1:1 кездесуге бос уақыт",go:"Таныстар табу",demo:"Мысалмен толтыру",empty:"Ұсыныстарыңыз осында шығады",
+      goals:{job:"Жұмыс табу",hire:"Маман жалдау",find_mentor:"Ментор табу",mentor:"Ментор болу",cofounder:"Кофаундер табу",exchange:"Тәжірибе алмасу"},
+      forYou:"сізге пайдасы",forThem:"оларға пайдасы",copy:"Көшіру",met:"✓ Таныстық",no:"✕ Сәйкес емес",reasonQ:"Неге сәйкес емес?",r_goal:"Мақсат сәйкес емес",r_role:"Бағыт сәйкес емес",r_other:"Басқа",
+      found:(n,ms)=>`Топ-5 ${ms} мс ішінде. Танысқандар: ${n}`,slot:"Кездесу ",exp_y:"жыл тәжірибе",bk:{goal:"Мақсат",role:"Бағыт",stack:"Стек",interests:"Қызығушылық"},err:"Сервер қатесі"},
+  en:{dash:"Organizer dashboard",title:"Your profile",subtitle:"Fill it in a minute and get 5 people worth meeting",name:"Name",role:"Role",role_ph:"Backend developer",exp:"Experience, yrs",stack:"Stack (comma-separated)",stack_ph:"Python, FastAPI, PostgreSQL",interests:"Interests (comma-separated)",interests_ph:"fintech, LLM, startups",goal:"Goal",about:"About me",about_ph:"A couple of sentences about you and what you're looking for",slots:"Free time for 1:1 meetings",go:"Find people to meet",demo:"Fill in an example",empty:"Your recommendations will appear here",
+      goals:{job:"Find a job",hire:"Hire",find_mentor:"Find a mentor",mentor:"Become a mentor",cofounder:"Find a co-founder",exchange:"Exchange experience"},
+      forYou:"value for you",forThem:"value for them",copy:"Copy",met:"✓ We met",no:"✕ Not a fit",reasonQ:"Why not a fit?",r_goal:"Wrong goal",r_role:"Wrong field",r_other:"Other",
+      found:(n,ms)=>`Top 5 in ${ms} ms. Already met: ${n}`,slot:"Meet at ",exp_y:"yrs experience",bk:{goal:"Goals",role:"Field",stack:"Stack",interests:"Interests"},err:"Server error"},
+};
+const SLOTS=["11:00","11:30","12:00","13:30","14:00","14:30","15:00","16:00"];
+let lang="ru", last=null;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let sid=store.get("sid"); if(!sid){sid=Math.random().toString(36).slice(2); store.set("sid",sid);}
+lang=store.get("lang")||"ru";
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+$("#slots").innerHTML=SLOTS.map(s=>`<label><input type="checkbox" name="slots" value="${s}">${s}</label>`).join("");
+
+function applyLang(){
+  const t=T[lang]; document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t[e.dataset.i]);
+  document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=t[e.dataset.ph]);
+  const g=$("#goal"), cur=g.value; g.innerHTML=Object.entries(t.goals).map(([k,v])=>`<option value="${k}">${v}</option>`).join(""); if(cur) g.value=cur;
+  document.querySelectorAll(".langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===lang));
+  if(last) render(last);
+}
+document.querySelectorAll(".langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l; store.set("lang",lang); applyLang(); if(last) submit();});
+
+$("#demo").onclick=()=>{
+  const f=$("#f");
+  f.elements['name'].value="Ерлан"; f.elements['role'].value="Backend-разработчик"; f.elements['experience'].value=2;
+  f.elements['stack'].value="Python, FastAPI, PostgreSQL, Docker"; f.elements['interests'].value="финтех, высоконагруженные системы";
+  f.elements['goal'].value="job"; f.elements['about'].value="Пишу бэкенд на Python 2 года, хочу перейти в финтех-команду.";
+  f.querySelectorAll('[name=slots]').forEach((c,i)=>c.checked=[2,4,6].includes(i));
+};
+
+const split=s=>s.split(/[,;]/).map(x=>x.trim()).filter(Boolean);
+async function submit(e){
+  e&&e.preventDefault(); const f=$("#f");
+  const profile={name:f.elements['name'].value,role:f.elements['role'].value,experience:+f.elements['experience'].value||0,stack:split(f.elements['stack'].value),
+    interests:split(f.elements['interests'].value),goal:f.elements['goal'].value,about:f.elements['about'].value,slots:[...f.querySelectorAll('[name=slots]:checked')].map(c=>c.value)};
+  await call("/api/recommend",{session_id:sid,profile,lang});
+}
+async function call(url,body){
+  try{ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(!r.ok) throw 0; last=await r.json();
+    const next=new URLSearchParams(location.search).get("next");
+    if(next && next.startsWith("/p/")){ location.href=next; return; }
+    render(last);
+  }catch(err){ $("#out").innerHTML=`<div class="panel empty">${T[lang].err}</div>`; }
+}
+$("#f").addEventListener("submit",submit);
+
+function render(d){
+  const t=T[lang];
+  $("#out").innerHTML=(d.me?badgeBox(d.me):"")+`<div class="info">${t.found(d.met,d.elapsed_ms)}</div>`+d.results.map(r=>{
+    const p=r.profile, init=p.name.split(" ").map(x=>x[0]).join("").slice(0,2);
+    const hit=new Set([...r.common_stack,...r.common_interests].map(x=>x.toLowerCase()));
+    const bars=Object.entries(t.bk).map(([k,v])=>`<div>${v}<div class="bar"><i style="width:${Math.round((r.breakdown[k]||0)*100)}%"></i></div></div>`).join("");
+    return `<div class="card">
+      <div class="top"><div class="ava">${esc(init)}</div>
+        <div><div class="name">${esc(p.name)}<span class="badge">${esc(t.goals[p.goal])}</span></div>
+        <div class="meta">${esc(p.role)}${p.company?" · "+esc(p.company):""} · ${p.experience} ${t.exp_y}</div></div>
+        <div class="score"><b>${Math.round(r.score*100)}%</b>${t.forYou} ${Math.round(r.for_you*100)} · ${t.forThem} ${Math.round(r.for_them*100)}</div></div>
+      <div class="why">${esc(r.why)}</div>
+      <div class="ice"><span>💬 ${esc(r.icebreaker)}</span><button onclick="navigator.clipboard&&navigator.clipboard.writeText(${esc(JSON.stringify(r.icebreaker))})">${t.copy}</button></div>
+      <div class="bars">${bars}</div>
+      <div class="tags">${[...p.stack,...p.interests].map(x=>`<span class="tag ${hit.has(x.toLowerCase())?"hit":""}">${esc(x)}</span>`).join("")}</div>
+      <div class="actions" id="a-${p.id}">
+        <button class="met" onclick="fb('${p.id}','met')">${t.met}</button>
+        <button class="no" onclick="askReason('${p.id}')">${t.no}</button>
+        ${r.meeting_slot?`<span class="slot">🕑 ${t.slot}${r.meeting_slot}</span>`:""}
+      </div></div>`;}).join("")+metBox(d.met_list||[]);
+}
+const X={
+ ru:{myBadge:"Ваш NFC-бейдж",badgeHint:"Запишите эту ссылку на метку. Прикладывая телефон к чужому бейджу, вы увидите совместимость.",writeTag:"Записать на NFC-метку",copy2:"Скопировать ссылку",metTitle:"Мои знакомства",metNone:"Пока никого. Прикладывайте телефон к бейджам."},
+ kk:{myBadge:"Сіздің NFC-бейджіңіз",badgeHint:"Осы сілтемені метказа жазыңыз. Телефонды басқа бейджге тигізсеңіз, үйлесімділікті көресіз.",writeTag:"NFC-метқа жазу",copy2:"Сілтемені көшіру",metTitle:"Менің таныстарым",metNone:"Әзірге жоқ. Бейджге телефонды тигізіңіз."},
+ en:{myBadge:"Your NFC badge",badgeHint:"Write this link to a tag. Tap your phone on someone else's badge to see your match.",writeTag:"Write to NFC tag",copy2:"Copy link",metTitle:"People I met",metNone:"No one yet. Tap badges to meet people."}
+};
+function badgeBox(me){
+  const x=X[lang], url=location.origin+me.url, ndef="NDEFReader" in window;
+  return `<div class="card"><div class="name">${x.myBadge}</div><div class="meta"><a href="${esc(me.url)}">${esc(url)}</a></div>
+    <div class="actions"><button onclick="navigator.clipboard&&navigator.clipboard.writeText('${url}')">${x.copy2}</button>${ndef?`<button class="met" onclick="writeTag('${url}',this)">${x.writeTag}</button>`:""}</div>
+    <div class="meta">${x.badgeHint}</div><div class="meta" style="margin-top:8px"><a href="/setup" style="color:var(--acc)">Настроить метку и распечатать QR</a></div></div>`;
+}
+async function writeTag(url,btn){
+  const old=btn.textContent;
+  try{ btn.textContent="…"; const w=new NDEFReader(); await w.write({records:[{recordType:"url",data:url}]}); btn.textContent="✓ OK"; }
+  catch(e){ btn.textContent=old; btn.title=String(e.message||e); }
+}
+function metBox(list){
+  const x=X[lang];
+  return `<div class="card"><div class="name">${x.metTitle} (${list.length})</div>${list.length?list.map(p=>`<div style="font-size:14px;margin:8px 0">${esc(p.name)} · ${esc(p.role)}${p.company?" · "+esc(p.company):""}${p.chat?` · <a href="/chat/${esc(p.id)}" style="color:var(--acc)">чат</a>`:""}</div>`).join(""):`<div class="meta">${x.metNone}</div>`}</div>`;
+}
+function askReason(id){
+  const t=T[lang];
+  $("#a-"+id).innerHTML=`<span style="font-size:13px">${t.reasonQ}</span>
+    <button onclick="fb('${id}','bad','goal')">${t.r_goal}</button><button onclick="fb('${id}','bad','role')">${t.r_role}</button><button onclick="fb('${id}','bad','other')">${t.r_other}</button>`;
+}
+function fb(id,verdict,reason){ call("/api/feedback",{session_id:sid,target_id:id,verdict,reason}); }
+applyLang();
+</script>
+</body>
+</html>

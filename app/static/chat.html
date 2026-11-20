@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TanysTap — чат</title>
+<style>
+  :root { --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc:#0B1E3F; --acc2:#EAF0FA; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink); background:#FFFFFF; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; color:var(--ink); text-decoration:none; }
+  header a { color:var(--acc); text-decoration:none; font-size:14px; }
+  main { max-width:620px; margin:0 auto; padding:20px; }
+  .peer { display:flex; gap:12px; align-items:center; padding-bottom:14px; border-bottom:1px solid var(--line); }
+  .pa { width:52px; height:52px; border-radius:50%; overflow:hidden; background:var(--acc2); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:20px; flex:none; }
+  .pa img { width:100%; height:100%; object-fit:cover; }
+  .pn { font-weight:600; font-size:16px; }
+  .pm { color:var(--muted); font-size:13px; }
+  .soc { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .soc a { font-size:12px; border:1px solid var(--line); border-radius:6px; padding:3px 8px; color:var(--ink); text-decoration:none; }
+  .log { height:440px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:14px 4px; }
+  .m { max-width:78%; padding:9px 12px; border-radius:12px; font-size:14px; line-height:1.45; word-wrap:break-word; white-space:pre-wrap; }
+  .mine { align-self:flex-end; background:var(--ink); color:#FFFFFF; border-bottom-right-radius:4px; }
+  .theirs { align-self:flex-start; background:var(--acc2); color:var(--ink); border-bottom-left-radius:4px; }
+  .t { font-size:11px; color:var(--muted); margin-top:3px; }
+  .mine .t { color:#A9B4C6; text-align:right; }
+  form { display:flex; gap:8px; border-top:1px solid var(--line); padding-top:12px; }
+  input { flex:1; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; }
+  button { padding:10px 16px; border:0; border-radius:8px; background:var(--ink); color:#fff; font-weight:600; font-size:14px; cursor:pointer; }
+  .info { color:var(--muted); font-size:14px; padding:24px 0; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></div>
+  <a href="/">← К подбору</a>
+</header>
+<main>
+  <div id="peer" class="peer"></div>
+  <div id="log" class="log"></div>
+  <form id="send"><input id="txt" maxlength="500" placeholder="Напишите сообщение" autocomplete="off"><button type="submit">Отправить</button></form>
+  <div id="err" class="info"></div>
+</main>
+<script>
+const pid = location.pathname.split("/").pop();
+const sid = localStorage.getItem("sid") || "";
+let meId = null, peerShown = false;
+const NET = {linkedin:"LinkedIn", facebook:"Facebook", tiktok:"TikTok", instagram:"Instagram", telegram:"Telegram", whatsapp:"WhatsApp"};
+
+function renderPeer(p) {
+  const box = document.getElementById("peer");
+  box.replaceChildren();
+  const av = document.createElement("div"); av.className = "pa";
+  if (p.avatar) { const img = document.createElement("img"); img.src = p.avatar; img.alt = ""; av.appendChild(img); }
+  else av.textContent = (p.name || "?").slice(0, 1);
+  const info = document.createElement("div");
+  const n = document.createElement("div"); n.className = "pn"; n.textContent = p.name;
+  const m = document.createElement("div"); m.className = "pm"; m.textContent = [p.role, p.company].filter(Boolean).join(" · ");
+  info.append(n, m);
+  const soc = document.createElement("div"); soc.className = "soc";
+  Object.entries(p.socials || {}).forEach(([k, u]) => {
+    const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; a.textContent = NET[k] || k;
+    soc.appendChild(a);
+  });
+  info.appendChild(soc);
+  box.append(av, info);
+}
+
+function bubble(m) {
+  const d = document.createElement("div");
+  d.className = "m " + (m.from === meId ? "mine" : "theirs");
+  d.textContent = m.text;
+  const t = document.createElement("div"); t.className = "t";
+  t.textContent = new Date(m.ts * 1000).toLocaleTimeString("ru", {hour:"2-digit", minute:"2-digit"});
+  d.appendChild(t);
+  return d;
+}
+
+async function load() {
+  const res = await fetch(`/api/chat/${encodeURIComponent(pid)}?session_id=${encodeURIComponent(sid)}`);
+  const err = document.getElementById("err");
+  if (res.status === 403) {
+    document.getElementById("send").style.display = "none";
+    document.getElementById("log").replaceChildren();
+    err.textContent = "Чат откроется, когда вы или этот участник отсканируете бейдж друг друга.";
+    return;
+  }
+  if (!res.ok) { err.textContent = "Не удалось открыть чат."; return; }
+  const d = await res.json();
+  meId = d.me;
+  if (!peerShown) { renderPeer(d.peer); peerShown = true; }
+  err.textContent = "";
+  const log = document.getElementById("log");
+  const atBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 40;
+  log.replaceChildren(...d.messages.map(bubble));
+  if (atBottom || !log.dataset.init) { log.scrollTop = log.scrollHeight; log.dataset.init = "1"; }
+}
+
+document.getElementById("send").onsubmit = async e => {
+  e.preventDefault();
+  const inp = document.getElementById("txt");
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = "";
+  const res = await fetch(`/api/chat/${encodeURIComponent(pid)}`, {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({session_id: sid, text})
+  });
+  if (res.ok) load();
+};
+
+load();
+setInterval(load, 3000);
+</script>
+</body>
+</html>

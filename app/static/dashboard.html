@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<style>body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TanysTap — дашборд организатора</title>
+<style>
+  :root { --bg:#FFFFFF; --card:#FFFFFF; --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc:#0B1E3F; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; --mid:#5A6B8C; --low:#8A97AD; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Inter,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:16px 24px; background:var(--card); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; }
+  header a { color:var(--acc); text-decoration:none; }
+  main { max-width:1180px; margin:0 auto; padding:24px; display:grid; grid-template-columns:repeat(12,1fr); gap:16px; }
+  .p { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .kpi { grid-column:span 3; } .kpi b { font-size:30px; display:block; } .kpi span { color:var(--muted); font-size:13px; }
+  .map { grid-column:span 8; } .side { grid-column:span 4; } .half { grid-column:span 6; }
+  @media (max-width:900px){ .kpi{grid-column:span 6} .map,.side,.half{grid-column:span 12} }
+  h3 { margin:0 0 12px; font-size:15px; }
+  .row { display:flex; align-items:center; gap:8px; font-size:13px; margin:6px 0; }
+  .row .l { width:150px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row .b { flex:1; height:10px; background:#eef0f5; border-radius:5px; overflow:hidden; } .row .b i { display:block; height:100%; background:var(--acc); border-radius:5px; }
+  .row .v { width:30px; text-align:right; font-variant-numeric:tabular-nums; }
+  canvas { width:100%; height:420px; display:block; }
+  .legend { display:flex; flex-wrap:wrap; gap:10px; font-size:12px; color:var(--muted); margin-top:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  .alert { font-size:13px; padding:10px 12px; border-radius:10px; background:#fff6ed; color:#b54708; margin-top:8px; }
+  .okk { background:#ecfdf3; color:#027a48; }
+</style>
+</head>
+<body>
+<header><b style="display:flex;align-items:center;gap:10px;"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>Дашборд организатора</b><a href="/">← К подбору</a></header>
+<main id="m"></main>
+<script>
+const GOALS={job:"Ищут работу",hire:"Нанимают",find_mentor:"Ищут ментора",mentor:"Готовы менторить",cofounder:"Ищут кофаундера",exchange:"Обмен опытом"};
+const FAM={backend:"Backend",frontend:"Frontend",mobile:"Mobile",data:"Data/ML",analytics:"Аналитика",devops:"DevOps",qa:"QA",design:"Дизайн",product:"Продукт",security:"ИБ",business:"Бизнес"};
+const COLORS=["#0B1E3F","#2E63B0","#5B86C6","#8FB0E0","#B9C5D9","#1E4A8C","#5A6B8C","#0F3B6B","#7FA0C8","#3D5A80","#A3B8D6"];
+const bars=(pairs)=>{const mx=Math.max(...pairs.map(p=>p[1]));return pairs.map(([l,v])=>`<div class="row"><span class="l">${l}</span><span class="b"><i style="width:${v/mx*100}%"></i></span><span class="v">${v}</span></div>`).join("");};
+fetch("/api/stats").then(r=>r.json()).then(s=>{
+  const g=s.goals, fams=Object.keys(s.families);
+  const bal=(a,b,la,lb)=>{const r=a/(b||1);return r>1.5?`<div class="alert">⚠ ${la}: ${a}, ${lb}: ${b}. Не хватает «${lb.toLowerCase()}», стоит пригласить ещё.</div>`:`<div class="alert okk">✓ ${la}: ${a}, ${lb}: ${b}. Баланс в норме.</div>`;};
+  document.getElementById("m").innerHTML=`
+    <div class="p kpi"><b>${s.total}</b><span>участников</span></div>
+    <div class="p kpi"><b>${g.hire||0}</b><span>нанимают</span></div>
+    <div class="p kpi"><b>${g.job||0}</b><span>ищут работу</span></div>
+    <div class="p kpi"><b>${g.mentor||0}</b><span>готовы менторить</span></div>
+    <div class="p kpi"><b>${s.met_total||0}</b><span>знакомств отмечено</span></div>
+    <div class="p map"><h3>Карта интересов зала</h3><canvas id="c"></canvas>
+      <div class="legend">${fams.map((f,i)=>`<span><i style="background:${COLORS[i%COLORS.length]}"></i>${FAM[f]||f}</span>`).join("")}</div></div>
+    <div class="p side"><h3>Цели участников</h3>${bars(Object.entries(g).map(([k,v])=>[GOALS[k]||k,v]).sort((a,b)=>b[1]-a[1]))}
+      <h3 style="margin-top:18px">Спрос и предложение</h3>
+      ${bal(g.job||0,g.hire||0,"Ищут работу","Нанимают")}${bal(g.find_mentor||0,g.mentor||0,"Ищут ментора","Менторы")}</div>
+    <div class="p half"><h3>Топ интересов</h3>${bars(s.top_interests)}</div>
+    <div class="p half"><h3>Топ технологий</h3>${bars(s.top_stack)}</div>`;
+  const c=document.getElementById("c"), dpr=window.devicePixelRatio||1, W=c.clientWidth, H=c.clientHeight;
+  c.width=W*dpr; c.height=H*dpr; const x=c.getContext("2d"); x.scale(dpr,dpr);
+  const pts=s.points.map(p=>({...p,px:20+p.x*(W-40),py:20+(1-p.y)*(H-40)}));
+  const draw=(hl)=>{x.clearRect(0,0,W,H);pts.forEach(p=>{x.beginPath();x.arc(p.px,p.py,p===hl?7:5,0,7);x.fillStyle=COLORS[fams.indexOf(p.family)%COLORS.length];x.globalAlpha=.8;x.fill();x.globalAlpha=1;});
+    if(hl){const t=`${hl.name} · ${hl.role} · ${GOALS[hl.goal]}`;x.font="12px sans-serif";const w=x.measureText(t).width+12;const tx=Math.min(hl.px+10,W-w-4);x.fillStyle="#151a2d";x.fillRect(tx,hl.py-26,w,20);x.fillStyle="#fff";x.fillText(t,tx+6,hl.py-12);}};
+  draw(); c.onmousemove=e=>{const r=c.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=null,bd=144;pts.forEach(p=>{const d=(p.px-mx)**2+(p.py-my)**2;if(d<bd){bd=d;best=p;}});draw(best);};
+});
+</script>
+</body>
+</html>
