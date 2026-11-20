@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<title>TanysTap — умный нетворкинг</title>
+<style>
+  :root { --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink); background:#fff; }
+  input, select, textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:15px; color:var(--ink); background:#fff; }
+  input:focus, select:focus, textarea:focus { outline:2px solid #2E63B0; outline-offset:-1px; border-color:#2E63B0; }
+  label { display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+  .btn { display:block; width:100%; margin-top:20px; padding:13px; border:0; border-radius:10px; background:var(--ink); color:#fff; font-size:15px; font-weight:600; cursor:pointer; text-align:center; text-decoration:none; }
+  .btn.ghost { background:var(--acc2); color:var(--ink); margin-top:10px; }
+  .err { color:var(--bad); font-size:14px; margin-top:12px; min-height:20px; }
+  @media (max-width:760px){ input, select, textarea { font-size:16px; } }
+  main { min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 18px; max-width:760px; margin:0 auto; }
+  .logo { display:flex; align-items:center; gap:12px; font-size:30px; font-weight:700; }
+  .tag { color:var(--muted); font-size:16px; margin:12px 0 34px; text-align:center; line-height:1.5; max-width:480px; }
+  .choices { display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; }
+  @media (max-width:620px){ .choices { grid-template-columns:1fr; } }
+  .choice { display:flex; flex-direction:column; gap:10px; padding:26px 22px; border:1px solid var(--line); border-radius:18px; text-decoration:none; color:var(--ink); transition:border-color .15s, box-shadow .15s, transform .15s; }
+  .choice:hover { border-color:var(--ink); box-shadow:0 8px 24px rgba(11,30,63,.08); transform:translateY(-2px); }
+  .choice.main { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .choice.main p { color:#C9D4E8; }
+  .ic { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:var(--acc2); }
+  .choice.main .ic { background:rgba(255,255,255,.12); }
+  .ic svg { width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .choice b { font-size:19px; font-weight:600; }
+  .choice p { margin:0; color:var(--muted); font-size:14px; line-height:1.5; }
+  .go { margin-top:auto; padding-top:8px; font-size:14px; font-weight:600; }
+  .foot { margin-top:30px; color:#8A97AD; font-size:12px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <div class="logo"><svg viewBox="0 0 120 120" width="46" height="46" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>TanysTap</div>
+  <div class="tag">Приложите телефон к бейджу — и узнайте, зачем вам познакомиться.</div>
+  <div class="choices">
+    <a class="choice main" href="/join" id="guest">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 19c0-3 3-5 6-5s6 2 6 5M12 15.5c1-.9 2.4-1.5 4-1.5 3 0 6 2 6 5"/></svg></div>
+      <b>Я участник</b>
+      <p>Зарегистрируйтесь, получите 5 человек, с кем стоит познакомиться, тапайте бейджи и общайтесь в чате.</p>
+      <span class="go">Войти или зарегистрироваться →</span>
+    </a>
+    <a class="choice" href="/org">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+      <b>Организатор</b>
+      <p>Карта зала, база участников, кто с кем тапнулся и кого стоит познакомить. Только для команды мероприятия.</p>
+      <span class="go">Вход для организатора →</span>
+    </a>
+  </div>
+  <div class="foot">TanysTap · AI for Smart Campus</div>
+</main>
+<script>
+try { if (localStorage.getItem("sid")) document.getElementById("guest").href = "/app"; } catch (e) {}
+</script>
+</body>
+</html>

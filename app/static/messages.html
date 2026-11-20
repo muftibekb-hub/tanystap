@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TanysTap — сообщения</title>
+<style>
+  :root { --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink); background:#fff; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; color:var(--ink); text-decoration:none; }
+  main { max-width:640px; margin:0 auto; padding:18px 16px; }
+  h1 { font-size:20px; font-weight:600; margin:4px 0 4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:14px; line-height:1.5; }
+  .item { display:flex; gap:12px; align-items:center; padding:12px 10px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; border-radius:10px; }
+  .item:hover { background:#F6F8FC; }
+  .item.new { background:var(--acc2); }
+  .av { width:48px; height:48px; border-radius:50%; overflow:hidden; background:var(--acc2); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:18px; flex:none; }
+  .av img { width:100%; height:100%; object-fit:cover; }
+  .body { flex:1; min-width:0; }
+  .nm { font-weight:600; font-size:15px; }
+  .rl { color:var(--muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pv { font-size:14px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pv.unread { font-weight:600; }
+  .side { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:none; }
+  .tm { color:var(--muted); font-size:12px; }
+  .cnt { min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:var(--bad); color:#fff; font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+  .acts { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .acts a { font-size:13px; padding:7px 12px; border-radius:8px; border:1px solid var(--line); color:var(--ink); text-decoration:none; }
+  .acts a.pri { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .empty { color:var(--muted); text-align:center; padding:50px 16px; line-height:1.6; }
+  .empty a { color:var(--ink); }
+  .tabs { display:flex; gap:6px; margin-bottom:10px; }
+  .tabs button { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; font-size:13px; cursor:pointer; color:var(--ink); }
+  .tabs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+</style>
+</head>
+<body>
+<header><a class="brand" href="/app"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></a></header>
+<main>
+  <h1>Сообщения</h1>
+  <div class="sub">Здесь все, кого вы тапнули и кто тапнул вас. Откройте чат или профиль человека.</div>
+  <div class="tabs" id="tabs"><button data-f="all" class="on">Все</button><button data-f="unread">Непрочитанные</button><button data-f="mine">Я тапнул</button><button data-f="me">Тапнули меня</button></div>
+  <div id="list"></div>
+</main>
+<script>
+const sid = (() => { try { return localStorage.getItem("sid") || ""; } catch (e) { return ""; } })();
+function av(c) {
+  const d = document.createElement("div"); d.className = "av";
+  if (c.avatar) { const i = document.createElement("img"); i.src = c.avatar; i.alt = ""; d.appendChild(i); }
+  else d.textContent = (c.name || "?").slice(0, 1);
+  return d;
+}
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function ago(ts) {
+  const s = Math.max(0, Date.now() / 1000 - ts);
+  if (s < 60) return "только что";
+  if (s < 3600) return Math.floor(s / 60) + " мин назад";
+  if (s < 86400) return new Date(ts * 1000).toLocaleTimeString("ru", {hour: "2-digit", minute: "2-digit"});
+  return new Date(ts * 1000).toLocaleDateString("ru", {day: "numeric", month: "short"});
+}
+let filter = "all", data = [];
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  filter = b.dataset.f; document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b)); render();
+});
+function render() {
+  const list = document.getElementById("list");
+  const rows = data.filter(t => filter === "all" || (filter === "unread" && t.unread) || (filter === "mine" && t.i_tapped) || (filter === "me" && t.tapped_me));
+  if (!rows.length) {
+    list.innerHTML = data.length ? '<div class="empty">Здесь пока пусто.</div>'
+      : '<div class="empty">Пока никого нет.<br>Приложите телефон к бейджу участника — он появится здесь, и вы сможете ему написать.</div>';
+    return;
+  }
+  list.replaceChildren(...rows.map(t => {
+    const c = t.card, row = el("div", "item" + (t.unread ? " new" : ""));
+    const body = el("div", "body");
+    body.append(el("div", "nm", c.name), el("div", "rl", [c.role, c.company].filter(Boolean).join(" · ")));
+    const how = t.i_tapped && t.tapped_me ? "Вы тапнули друг друга" : t.i_tapped ? "Вы тапнули" : "Тапнул(а) вас";
+    const pv = el("div", "pv" + (t.unread ? " unread" : ""), t.last ? (t.last.mine ? "Вы: " : "") + t.last.text : how);
+    body.appendChild(pv);
+    const acts = el("div", "acts");
+    const chat = el("a", "pri", "Написать"); chat.href = "/chat/" + encodeURIComponent(c.id);
+    const prof = el("a", "", "Профиль"); prof.href = "/p/" + encodeURIComponent(c.id) + "?view=1";
+    acts.append(chat, prof); body.appendChild(acts);
+    const side = el("div", "side");
+    if (t.ts) side.appendChild(el("div", "tm", ago(t.ts)));
+    if (t.unread) side.appendChild(el("span", "cnt", String(t.unread)));
+    row.append(av(c), body, side);
+    return row;
+  }));
+}
+async function load() {
+  if (!sid) { document.getElementById("list").innerHTML = '<div class="empty">Сначала <a href="/join">зарегистрируйтесь</a>.</div>'; return; }
+  try { data = (await fetch(`/api/inbox?session_id=${encodeURIComponent(sid)}`).then(r => r.json())).threads || []; render(); } catch (e) {}
+}
+load(); setInterval(load, 5000);
+</script>
+<script src="/static/nav.js"></script>
+</body>
+</html>

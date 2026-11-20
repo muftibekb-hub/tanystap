@@ -7,7 +7,10 @@ import time
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Flask, jsonify, request, send_from_directory
+import hmac
+import secrets
+
+from flask import Flask, jsonify, redirect, request, send_from_directory, session as web_session
 
 from explain import explain_all
 from recommender import GOAL_MATRIX, Recommender
@@ -27,6 +30,11 @@ LIVE = Path(os.getenv("LIVE_PATH", ROOT.parent / "data" / "live.json"))
 STATE = LIVE.parent / "state.json"  # сканы и чаты
 
 app = Flask(__name__, static_folder=str(ROOT / "static"))
+# Единственный аккаунт организатора создаётся заранее через переменные окружения
+ORG_LOGIN = os.getenv("ORG_LOGIN", "organizer")
+ORG_PASSWORD = os.getenv("ORG_PASSWORD", "tanystap-2026")
+app.secret_key = os.getenv("SECRET_KEY") or hashlib.sha256(("tanystap:" + ORG_PASSWORD).encode()).hexdigest()
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
 rec = Recommender(DATA, LIVE)
 SESSIONS: dict[str, dict] = {}
 LOCK = threading.Lock()
@@ -42,22 +50,31 @@ SHOW_KEYS = set(NETWORKS) | {"whatsapp", "avatar", "compat", "background"}
 DEFAULT_SHOW = ["avatar", "compat", "background"]
 ROLE_LABEL = {"job": "как работник", "hire": "как работодатель", "find_mentor": "как ученик",
               "mentor": "как ментор", "cofounder": "как кофаундер", "exchange": "как собеседник по опыту"}
-PRIVATE_KEYS = ("socials", "show")
+PRIVATE_KEYS = ("socials", "show", "hide")
 
 
 def load_state():
+    d = {}
     if STATE.exists():
-        d = json.loads(STATE.read_text(encoding="utf-8"))
-        return {tuple(x) for x in d.get("scans", [])}, d.get("chats", {})
-    return set(), {}
+        try:
+            d = json.loads(STATE.read_text(encoding="utf-8"))
+        except ValueError:
+            d = {}
+    return ({tuple(x) for x in d.get("scans", [])}, d.get("chats", {}), d.get("scan_log", []),
+            d.get("read", {}), d.get("seen", {}), d.get("met", []), d.get("accounts", {}))
 
 
-SCANS, CHATS = load_state()
+SCANS, CHATS, SCAN_LOG, READ, SEEN, MET, ACCOUNTS = load_state()
+# MET: отметки «познакомились»; ACCOUNTS: логин гостя -> {salt, hash, sid}
+ACC_BY_SID = {v["sid"]: k for k, v in ACCOUNTS.items()}
+# SCAN_LOG: кто кого тапнул и когда; READ[me][peer]: до какого времени прочитан чат; SEEN[me]: когда открывал уведомления
 
 
 def save_state():
     STATE.parent.mkdir(parents=True, exist_ok=True)
-    STATE.write_text(json.dumps({"scans": [list(x) for x in SCANS], "chats": CHATS}, ensure_ascii=False), encoding="utf-8")
+    STATE.write_text(json.dumps({"scans": [list(x) for x in SCANS], "chats": CHATS, "scan_log": SCAN_LOG[-5000:],
+                                 "read": READ, "seen": SEEN, "met": MET[-5000:],
+                                 "accounts": ACCOUNTS}, ensure_ascii=False), encoding="utf-8")
 
 
 def own_id(sid: str) -> str:
@@ -66,7 +83,12 @@ def own_id(sid: str) -> str:
 
 
 def session(sid: str) -> dict:
-    return SESSIONS.setdefault(sid, {"exclude": set(), "met": set(), "penalties": {}, "query": None, "lang": "ru"})
+    s = SESSIONS.setdefault(sid, {"exclude": set(), "met": set(), "penalties": {}, "query": None, "lang": "ru"})
+    if not s["query"]:  # после перезапуска сервера берём сохранённую анкету
+        pid = own_id(sid)
+        if pid in rec.by_id:
+            s["query"] = dict(rec.profiles[rec.by_id[pid]])
+    return s
 
 
 def clean_socials(raw) -> dict:
@@ -103,6 +125,10 @@ def clean_show(v) -> list:
     return [k for k in (v or []) if k in SHOW_KEYS]
 
 
+def clean_hide(v) -> list:
+    return [k for k in (v or []) if k in NETWORKS or k == "whatsapp"]
+
+
 def public_card(p: dict) -> dict:
     """То, что видит другой участник: только то, что владелец отметил для показа."""
     shown = set(p.get("show", DEFAULT_SHOW))
@@ -115,7 +141,8 @@ def public_card(p: dict) -> dict:
         "role": p.get("role", ""),
         "company": p.get("company", ""),
         "avatar": p.get("avatar", "") if "avatar" in shown else "",
-        "socials": {k: v for k, v in (p.get("socials") or {}).items() if k in shown},
+        # заполненная соцсеть видна всем, пока владелец её не скрыл
+        "socials": {k: v for k, v in (p.get("socials") or {}).items() if k not in set(p.get("hide") or [])},
         "background": background,
         "live": bool(p.get("live")),
     }
@@ -126,12 +153,17 @@ def own_view(p: dict) -> dict:
 
 
 def save_profile(sid: str, prof: dict) -> dict:
-    prof = dict(prof)
-    prof["id"] = own_id(sid)
+    pid = own_id(sid)
+    prev = rec.profiles[rec.by_id[pid]] if pid in rec.by_id else {}
+    merged = {k: v for k, v in prev.items() if not k.startswith("_")}
+    merged.update(prof)  # поля, которых нет в форме (слоты, компания), не теряются
+    prof = merged
+    prof["id"] = pid
     prof["experience"] = int(prof.get("experience") or 0)
     prev = rec.profiles[rec.by_id[prof["id"]]] if prof["id"] in rec.by_id else {}
     prof["socials"] = clean_socials(prof["socials"]) if "socials" in prof else prev.get("socials", {})
     prof["show"] = clean_show(prof["show"]) if "show" in prof else prev.get("show", DEFAULT_SHOW)
+    prof["hide"] = clean_hide(prof.get("hide"))
     prof["avatar"] = clean_avatar(prof["avatar"]) if "avatar" in prof else prev.get("avatar", "")
     prof.setdefault("stack", [])
     prof.setdefault("interests", [])
@@ -225,10 +257,190 @@ def profile_save():
 
 @app.get("/api/me")
 def me_profile():
-    mid = own_id(request.args.get("session_id", ""))
+    sid = request.args.get("session_id", "")
+    mid = own_id(sid)
+    login = ACC_BY_SID.get(sid)
     if mid not in rec.by_id:
-        return jsonify({"exists": False})
-    return jsonify({"exists": True, "profile": own_view(rec.profiles[rec.by_id[mid]])})
+        return jsonify({"exists": False, "account": bool(login), "login": login})
+    return jsonify({"exists": True, "account": bool(login), "login": login,
+                    "profile": own_view(rec.profiles[rec.by_id[mid]])})
+
+
+# ---------- аккаунты гостей ----------
+def _hash(password: str, salt: str) -> str:
+    return hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120_000).hex()
+
+
+def _clean_login(v) -> str:
+    return re.sub(r"\s+", "", str(v or "")).lower()
+
+
+@app.post("/api/register")
+def register():
+    body = request.get_json(force=True)
+    login, password = _clean_login(body.get("login")), str(body.get("password") or "")
+    if not re.fullmatch(r"[a-z0-9._@+\-]{3,40}", login):
+        return jsonify({"error": "Логин: 3–40 символов, латиница, цифры, телефон или email"}), 400
+    if len(password) < 4:
+        return jsonify({"error": "Пароль минимум 4 символа"}), 400
+    with LOCK:
+        if login in ACCOUNTS:
+            return jsonify({"error": "Такой логин уже занят. Войдите или выберите другой."}), 409
+        old = str(body.get("session_id") or "")
+        # если в этом браузере уже была анкета без аккаунта — привязываем её
+        sid = old if re.fullmatch(r"[a-z0-9]{6,32}", old) and old not in ACC_BY_SID else secrets.token_hex(8)
+        salt = secrets.token_hex(8)
+        ACCOUNTS[login] = {"salt": salt, "hash": _hash(password, salt), "sid": sid, "ts": int(time.time())}
+        ACC_BY_SID[sid] = login
+        save_state()
+    return jsonify({"ok": True, "session_id": sid, "has_profile": own_id(sid) in rec.by_id})
+
+
+@app.post("/api/login")
+def login_guest():
+    body = request.get_json(force=True)
+    acc = ACCOUNTS.get(_clean_login(body.get("login")))
+    if not acc or not hmac.compare_digest(acc["hash"], _hash(str(body.get("password") or ""), acc["salt"])):
+        return jsonify({"error": "Неверный логин или пароль"}), 401
+    return jsonify({"ok": True, "session_id": acc["sid"], "has_profile": own_id(acc["sid"]) in rec.by_id})
+
+
+GOAL_LABELS = {"hire": "Нанимают", "job": "Ищут работу", "mentor": "Готовы менторить", "find_mentor": "Ищут ментора",
+               "cofounder": "Ищут кофаундера", "exchange": "Обмен опытом"}
+
+
+@app.get("/api/people")
+def people():
+    """Живые участники для меню и списка людей; совместимость считается с вами."""
+    sid = request.args.get("session_id", "")
+    me = own_id(sid)
+    goal = request.args.get("goal")
+    live = [p for p in rec.profiles if p.get("live") and p["id"] != me]
+    counts = {g: sum(1 for p in live if p["goal"] == g) for g in GOAL_LABELS}
+    out = []
+    if goal in GOAL_LABELS:
+        q = rec.profiles[rec.by_id[me]] if me in rec.by_id else None
+        for p in live:
+            if p["goal"] != goal:
+                continue
+            card = public_card(p)
+            card["goal"] = p["goal"]
+            card["score"] = rec.pair(q, p["id"])[1]["score"] if q else None
+            card["chat"] = chat_allowed(me, p["id"])
+            out.append(card)
+        out.sort(key=lambda c: -(c["score"] or 0))
+    return jsonify({"labels": GOAL_LABELS, "counts": counts, "people": out})
+
+
+# ---------- организатор ----------
+@app.post("/api/org/login")
+def org_login():
+    body = request.get_json(force=True)
+    ok = hmac.compare_digest(str(body.get("login") or "").strip().lower(), ORG_LOGIN.lower()) and \
+        hmac.compare_digest(str(body.get("password") or ""), ORG_PASSWORD)
+    if not ok:
+        time.sleep(0.5)
+        return jsonify({"error": "Неверный логин или пароль организатора"}), 401
+    web_session["org"] = True
+    web_session.permanent = True
+    return jsonify({"ok": True})
+
+
+@app.post("/api/org/logout")
+def org_logout():
+    web_session.pop("org", None)
+    return jsonify({"ok": True})
+
+
+@app.get("/api/org/overview")
+def org_overview():
+    """Всё для кабинета организатора: участники, тапы, знакомства, чаты и потенциальные пары."""
+    if not web_session.get("org"):
+        return jsonify({"error": "organizer only"}), 403
+    demo = request.args.get("demo") == "1"
+    nodes = [p for p in rec.profiles if p.get("live")]
+    if demo:  # демо-участники из синтетической базы, только с потенциальными связями
+        base = [p for p in rec.profiles if not p.get("live")]
+        nodes += base[::max(1, len(base) // 40)][:40]
+    ids = [p["id"] for p in nodes]
+    pos = {pid: i for i, pid in enumerate(ids)}
+    m = rec.mutual_matrix(ids)
+
+    edges, connected = [], set()
+    pairs = {}
+    for a, b in SCANS:
+        if a in pos and b in pos and a != b:
+            k = tuple(sorted((a, b)))
+            pairs.setdefault(k, set()).add(a)
+    for (a, b), who in pairs.items():
+        ts = max([e["ts"] for e in SCAN_LOG if {e["from"], e["to"]} == {a, b}] or [0])
+        edges.append({"a": a, "b": b, "type": "mutual" if len(who) == 2 else "tap",
+                      "from": next(iter(who)), "ts": ts, "score": round(float(m[pos[a], pos[b]]), 2)})
+        connected.add((a, b))
+    for e in MET:
+        if e["from"] in pos and e["to"] in pos:
+            k = tuple(sorted((e["from"], e["to"])))
+            edges.append({"a": k[0], "b": k[1], "type": "met", "from": e["from"], "ts": e["ts"],
+                          "score": round(float(m[pos[k[0]], pos[k[1]]]), 2)})
+            connected.add(k)
+    msg_count = {}
+    for key, msgs in CHATS.items():
+        a, b = key.split("|")
+        if a in pos and b in pos and msgs:
+            msg_count[a] = msg_count.get(a, 0) + len(msgs)
+            msg_count[b] = msg_count.get(b, 0) + len(msgs)
+            edges.append({"a": a, "b": b, "type": "chat", "count": len(msgs), "ts": msgs[-1]["ts"],
+                          "score": round(float(m[pos[a], pos[b]]), 2)})
+            connected.add((a, b) if a < b else (b, a))
+    # потенциальные пары: топ-3 для каждого, кто ещё не связан
+    potential, seen_pairs = [], set()
+    for i, pid in enumerate(ids):
+        order = sorted(range(len(ids)), key=lambda j: -m[i, j])
+        picked = 0
+        for j in order:
+            if j == i or picked >= 3 or m[i, j] < 0.3:
+                continue
+            k = tuple(sorted((pid, ids[j])))
+            picked += 1
+            if k in connected or k in seen_pairs:
+                continue
+            seen_pairs.add(k)
+            potential.append({"a": k[0], "b": k[1], "type": "potential", "score": round(float(m[i, j]), 2)})
+    potential.sort(key=lambda e: -e["score"])
+    edges += potential
+
+    taps_out = {pid: sum(1 for a, b in SCANS if a == pid and b in pos) for pid in ids}
+    taps_in = {pid: sum(1 for a, b in SCANS if b == pid and a in pos) for pid in ids}
+    met_n = {pid: sum(1 for e in MET if pid in (e["from"], e["to"])) for pid in ids}
+    logins = {own_id(sid): login for sid, login in ACC_BY_SID.items()}
+    reg_ts = {own_id(a["sid"]): a.get("ts", 0) for a in ACCOUNTS.values()}
+    people_out = []
+    for p in nodes:
+        i = pos[p["id"]]
+        best = max((j for j in range(len(ids)) if j != i), key=lambda j: m[i, j], default=None)
+        people_out.append({
+            "id": p["id"], "name": p["name"], "role": p.get("role", ""), "company": p.get("company", ""),
+            "goal": p["goal"], "family": p.get("role_family", ""), "live": bool(p.get("live")),
+            "experience": p.get("experience", 0), "stack": p.get("stack", [])[:6], "interests": p.get("interests", [])[:6],
+            "avatar": public_card(p)["avatar"], "login": logins.get(p["id"], ""), "registered": reg_ts.get(p["id"], 0),
+            "taps_out": taps_out[p["id"]], "taps_in": taps_in[p["id"]], "met": met_n[p["id"]],
+            "messages": msg_count.get(p["id"], 0),
+            "best": {"id": ids[best], "name": nodes[best]["name"], "score": round(float(m[i, best]), 2)} if best is not None else None,
+        })
+    live_n = sum(1 for p in nodes if p.get("live"))
+    return jsonify({
+        "people": people_out, "edges": edges, "goal_labels": GOAL_LABELS,
+        "kpi": {
+            "participants": live_n,
+            "taps": sum(1 for e in SCAN_LOG if e["from"] in pos and e["to"] in pos),
+            "connections": len(pairs),
+            "mutual": sum(1 for w in pairs.values() if len(w) == 2),
+            "met": len({tuple(sorted((e["from"], e["to"]))) for e in MET if e["from"] in pos and e["to"] in pos}),
+            "messages": sum(len(v) for k, v in CHATS.items() if all(x in pos for x in k.split("|"))),
+            "potential": len(potential),
+            "isolated": sum(1 for p in nodes if p.get("live") and not taps_out[p["id"]] and not taps_in[p["id"]]),
+        },
+    })
 
 
 @app.post("/api/feedback")
@@ -243,6 +455,11 @@ def feedback():
     target = rec.profiles[rec.by_id[body["target_id"]]]
     if body["verdict"] == "met":
         s["met"].add(target["id"])
+        me = own_id(sid)
+        with LOCK:
+            if not any(m["from"] == me and m["to"] == target["id"] for m in MET):
+                MET.append({"from": me, "to": target["id"], "ts": int(time.time())})
+                save_state()
     else:
         s["exclude"].add(target["id"])
         reason = body.get("reason")
@@ -275,7 +492,12 @@ def pair():
     card = public_card(rec.profiles[rec.by_id[tid]])
     strip_results([r])
     with LOCK:
-        SCANS.add((me, tid))
+        if body.get("source") != "browse":  # просмотр из списка людей — это ещё не тап
+            SCANS.add((me, tid))
+        if body.get("source") not in ("view", "browse"):
+            recent = any(e["from"] == me and e["to"] == tid and time.time() - e["ts"] < 600 for e in SCAN_LOG[-300:])
+            if not recent:
+                SCAN_LOG.append({"from": me, "to": tid, "ts": int(time.time())})
         save_state()
     tprof = rec.profiles[rec.by_id[tid]]
     if "compat" in set(tprof.get("show", DEFAULT_SHOW)):
@@ -299,6 +521,9 @@ def chat_get(pid):
     if not chat_allowed(me, pid):
         return jsonify({"error": "forbidden"}), 403
     key = "|".join(sorted([me, pid]))
+    with LOCK:
+        READ.setdefault(me, {})[pid] = int(time.time())
+        save_state()
     return jsonify({
         "me": me,
         "peer": public_card(rec.profiles[rec.by_id[pid]]),
@@ -324,8 +549,91 @@ def chat_post(pid):
     return jsonify({"messages": CHATS[key][-200:]})
 
 
+def card_of(pid: str) -> dict | None:
+    return public_card(rec.profiles[rec.by_id[pid]]) if pid in rec.by_id else None
+
+
+def unread(me: str, pid: str) -> int:
+    since = READ.get(me, {}).get(pid, 0)
+    msgs = CHATS.get("|".join(sorted([me, pid])), [])
+    return sum(1 for m in msgs if m["from"] != me and m["ts"] > since)
+
+
+def inbox_for(me: str) -> list:
+    """Все, с кем есть связь через тап: последние сообщения и непрочитанные."""
+    out = []
+    peers = {b for a, b in SCANS if a == me} | {a for a, b in SCANS if b == me}
+    for pid in peers:
+        card = card_of(pid)
+        if not card or pid == me:
+            continue
+        msgs = CHATS.get("|".join(sorted([me, pid])), [])
+        last = msgs[-1] if msgs else None
+        taps = [e["ts"] for e in SCAN_LOG if {e["from"], e["to"]} == {me, pid}]
+        out.append({
+            "card": card,
+            "chat": chat_allowed(me, pid),
+            "i_tapped": (me, pid) in SCANS,
+            "tapped_me": (pid, me) in SCANS,
+            "last": {"text": last["text"], "mine": last["from"] == me, "ts": last["ts"]} if last else None,
+            "unread": unread(me, pid),
+            "ts": max([last["ts"] if last else 0] + taps),
+        })
+    return sorted(out, key=lambda x: -x["ts"])
+
+
+def notifications_for(me: str) -> list:
+    ev = []
+    for e in SCAN_LOG:
+        if e["to"] == me and e["from"] != me and e["from"] in rec.by_id:
+            ev.append({"type": "tap", "ts": e["ts"], "card": card_of(e["from"])})
+    for key, msgs in CHATS.items():
+        if me not in key.split("|"):
+            continue
+        for m in msgs:
+            if m["from"] != me and m["from"] in rec.by_id:
+                ev.append({"type": "message", "ts": m["ts"], "text": m["text"][:120], "card": card_of(m["from"])})
+    ev.sort(key=lambda x: -x["ts"])
+    return ev[:100]
+
+
+@app.get("/api/inbox")
+def inbox():
+    me = own_id(request.args.get("session_id", ""))
+    return jsonify({"me": me, "threads": inbox_for(me)})
+
+
+@app.get("/api/notifications")
+def notifications():
+    me = own_id(request.args.get("session_id", ""))
+    seen = SEEN.get(me, 0)
+    ev = notifications_for(me)
+    for e in ev:
+        e["new"] = e["ts"] > seen
+    if request.args.get("mark") == "1":
+        with LOCK:
+            SEEN[me] = int(time.time())
+            save_state()
+    return jsonify({"events": ev})
+
+
+@app.get("/api/counts")
+def counts():
+    """Цифры на значках меню: непрочитанные сообщения и новые уведомления."""
+    me = own_id(request.args.get("session_id", ""))
+    peers = {b for a, b in SCANS if a == me} | {a for a, b in SCANS if b == me}
+    seen = SEEN.get(me, 0)
+    return jsonify({
+        "messages": sum(unread(me, p) for p in peers),
+        "notifications": sum(1 for e in notifications_for(me) if e["ts"] > seen),
+        "has_profile": me in rec.by_id,
+    })
+
+
 @app.get("/api/stats")
 def stats():
+    if not web_session.get("org"):
+        return jsonify({"error": "organizer only"}), 403
     d = rec.stats()
     d["met_total"] = sum(len(v["met"]) for v in SESSIONS.values())
     d["live"] = sum(1 for p in rec.profiles if p.get("live"))
@@ -340,12 +648,36 @@ def health():
 
 
 @app.get("/")
+def landing():
+    return send_from_directory(app.static_folder, "landing.html")
+
+
+@app.get("/app")
 def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
+@app.get("/join")
+def join_page():
+    return send_from_directory(app.static_folder, "join.html")
+
+
+@app.get("/people")
+def people_page():
+    return send_from_directory(app.static_folder, "people.html")
+
+
+@app.get("/org")
+def org_page():
+    if web_session.get("org"):
+        return redirect("/dashboard")
+    return send_from_directory(app.static_folder, "org_login.html")
+
+
 @app.get("/dashboard")
 def dashboard():
+    if not web_session.get("org"):
+        return redirect("/org")
     return send_from_directory(app.static_folder, "dashboard.html")
 
 
@@ -378,6 +710,16 @@ def qr_image():
 @app.get("/setup")
 def setup_page():
     return send_from_directory(app.static_folder, "setup.html")
+
+
+@app.get("/messages")
+def messages_page():
+    return send_from_directory(app.static_folder, "messages.html")
+
+
+@app.get("/notifications")
+def notifications_page():
+    return send_from_directory(app.static_folder, "notifications.html")
 
 
 @app.get("/chat/<pid>")

@@ -11,7 +11,9 @@
   header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid var(--line); }
   .brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:18px; color:var(--ink); text-decoration:none; }
   header a { color:var(--acc); text-decoration:none; font-size:14px; }
-  main { max-width:620px; margin:0 auto; padding:20px; }
+  main { max-width:620px; margin:0 auto; padding:16px; }
+  .pn a { color:inherit; }
+  @media (max-width:760px){ .log { height:calc(100dvh - 290px); } form { position:sticky; bottom:calc(64px + env(safe-area-inset-bottom)); background:#fff; padding-bottom:8px; } }
   .peer { display:flex; gap:12px; align-items:center; padding-bottom:14px; border-bottom:1px solid var(--line); }
   .pa { width:52px; height:52px; border-radius:50%; overflow:hidden; background:var(--acc2); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:20px; flex:none; }
   .pa img { width:100%; height:100%; object-fit:cover; }
@@ -19,14 +21,14 @@
   .pm { color:var(--muted); font-size:13px; }
   .soc { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .soc a { font-size:12px; border:1px solid var(--line); border-radius:6px; padding:3px 8px; color:var(--ink); text-decoration:none; }
-  .log { height:440px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:14px 4px; }
+  .log { height:calc(100dvh - 300px); min-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:14px 4px; }
   .m { max-width:78%; padding:9px 12px; border-radius:12px; font-size:14px; line-height:1.45; word-wrap:break-word; white-space:pre-wrap; }
   .mine { align-self:flex-end; background:var(--ink); color:#FFFFFF; border-bottom-right-radius:4px; }
   .theirs { align-self:flex-start; background:var(--acc2); color:var(--ink); border-bottom-left-radius:4px; }
   .t { font-size:11px; color:var(--muted); margin-top:3px; }
   .mine .t { color:#A9B4C6; text-align:right; }
   form { display:flex; gap:8px; border-top:1px solid var(--line); padding-top:12px; }
-  input { flex:1; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; }
+  input { flex:1; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:14px; }
   button { padding:10px 16px; border:0; border-radius:8px; background:var(--ink); color:#fff; font-weight:600; font-size:14px; cursor:pointer; }
   .info { color:var(--muted); font-size:14px; padding:24px 0; text-align:center; line-height:1.5; }
 </style>
@@ -34,7 +36,7 @@
 <body>
 <header>
   <div class="brand"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></div>
-  <a href="/">← К подбору</a>
+  <a class="back" href="/messages">← Сообщения</a>
 </header>
 <main>
   <div id="peer" class="peer"></div>
@@ -55,7 +57,7 @@ function renderPeer(p) {
   if (p.avatar) { const img = document.createElement("img"); img.src = p.avatar; img.alt = ""; av.appendChild(img); }
   else av.textContent = (p.name || "?").slice(0, 1);
   const info = document.createElement("div");
-  const n = document.createElement("div"); n.className = "pn"; n.textContent = p.name;
+  const n = document.createElement("div"); n.className = "pn"; const nl = document.createElement("a"); nl.href = "/p/" + encodeURIComponent(p.id) + "?view=1"; nl.textContent = p.name + " ›"; n.appendChild(nl);
   const m = document.createElement("div"); m.className = "pm"; m.textContent = [p.role, p.company].filter(Boolean).join(" · ");
   info.append(n, m);
   const soc = document.createElement("div"); soc.className = "soc";
@@ -83,7 +85,7 @@ async function load() {
   if (res.status === 403) {
     document.getElementById("send").style.display = "none";
     document.getElementById("log").replaceChildren();
-    err.textContent = "Чат откроется, когда вы или этот участник отсканируете бейдж друг друга.";
+    err.textContent = "Чат откроется, когда вы или этот участник тапнете бейдж друг друга, и у обоих будет заполнена анкета.";
     return;
   }
   if (!res.ok) { err.textContent = "Не удалось открыть чат."; return; }
@@ -107,11 +109,12 @@ document.getElementById("send").onsubmit = async e => {
     method: "POST", headers: {"Content-Type": "application/json"},
     body: JSON.stringify({session_id: sid, text})
   });
-  if (res.ok) load();
+  if (res.ok) load(); else { inp.value = text; document.getElementById("err").textContent = "Не отправилось. Проверьте интернет и попробуйте ещё раз."; }
 };
 
 load();
 setInterval(load, 3000);
 </script>
+<script src="/static/nav.js"></script>
 </body>
 </html>

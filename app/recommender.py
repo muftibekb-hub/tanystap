@@ -192,6 +192,23 @@ class Recommender:
             "common_interests": [x for x in b["interests"] if x.lower() in q["_interests"]],
         }
 
+    def mutual_matrix(self, ids: list[str]) -> np.ndarray:
+        """Взаимная совместимость (0..1) каждой пары из списка: для карты зала организатора."""
+        idx = [self.by_id[i] for i in ids]
+        if not idx:
+            return np.zeros((0, 0))
+        sims = (self.X[idx] @ self.X[idx].T).toarray()
+        n = len(idx)
+        m = np.zeros((n, n))
+        for a in range(n):
+            pa = self.profiles[idx[a]]
+            for b in range(a + 1, n):
+                pb = self.profiles[idx[b]]
+                s_ab, _ = self._one_way(pa, pb, float(sims[a, b]))
+                s_ba, _ = self._one_way(pb, pa, float(sims[a, b]))
+                m[a, b] = m[b, a] = 2 * s_ab * s_ba / (s_ab + s_ba + 1e-9)
+        return m
+
     def stats(self) -> dict:
         from collections import Counter
         from sklearn.decomposition import TruncatedSVD

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<title>TanysTap — вход для участников</title>
+<style>
+  :root { --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink); background:#fff; }
+  input, select, textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:15px; color:var(--ink); background:#fff; }
+  input:focus, select:focus, textarea:focus { outline:2px solid #2E63B0; outline-offset:-1px; border-color:#2E63B0; }
+  label { display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+  .btn { display:block; width:100%; margin-top:20px; padding:13px; border:0; border-radius:10px; background:var(--ink); color:#fff; font-size:15px; font-weight:600; cursor:pointer; text-align:center; text-decoration:none; }
+  .btn.ghost { background:var(--acc2); color:var(--ink); margin-top:10px; }
+  .err { color:var(--bad); font-size:14px; margin-top:12px; min-height:20px; }
+  @media (max-width:760px){ input, select, textarea { font-size:16px; } }
+  header { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:1px solid var(--line); }
+  header a { display:flex; align-items:center; gap:8px; font-weight:600; font-size:17px; color:var(--ink); text-decoration:none; }
+  header a.small { font-size:14px; font-weight:400; color:var(--muted); }
+  main { max-width:460px; margin:0 auto; padding:24px 18px 40px; }
+  h1 { font-size:24px; margin:6px 0 4px; font-weight:700; }
+  .sub { color:var(--muted); font-size:14px; line-height:1.5; margin-bottom:8px; }
+  .tabs { display:grid; grid-template-columns:1fr 1fr; background:var(--acc2); border-radius:12px; padding:4px; margin:18px 0 6px; }
+  .tabs button { border:0; background:none; padding:10px; border-radius:9px; font:inherit; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; }
+  .tabs button.on { background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(11,30,63,.12); }
+  .steps { display:flex; gap:6px; margin:14px 0 4px; }
+  .steps i { flex:1; height:4px; border-radius:2px; background:var(--line); }
+  .steps i.on { background:var(--ink); }
+  .row { display:grid; grid-template-columns:1fr 100px; gap:10px; }
+  .hint { color:var(--muted); font-size:12px; margin-top:6px; line-height:1.4; }
+  .goals { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .goals label { margin:0; font-weight:500; font-size:14px; border:1px solid var(--line); border-radius:10px; padding:11px 10px; cursor:pointer; display:flex; gap:8px; align-items:center; }
+  .goals input { width:auto; }
+  .goals label:has(input:checked) { border-color:var(--ink); background:var(--acc2); }
+  textarea { min-height:80px; resize:vertical; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header><a href="/"><svg viewBox="0 0 120 120" width="28" height="28" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>TanysTap</a><a class="small" href="/">← Назад</a></header>
+<main>
+  <section id="auth">
+    <h1>Добро пожаловать</h1>
+    <div class="sub">Зарегистрируйтесь, чтобы получать рекомендации, тапать бейджи и переписываться с участниками.</div>
+    <div class="tabs"><button type="button" data-t="reg" class="on">Регистрация</button><button type="button" data-t="login">Вход</button></div>
+    <form id="reg">
+      <div class="steps"><i class="on"></i><i></i></div>
+      <label>Имя и фамилия</label><input name="name" required autocomplete="name">
+      <label>Логин</label><input name="login" required autocomplete="username" placeholder="телефон или email">
+      <div class="hint">По логину и паролю вы войдёте с любого телефона или браузера.</div>
+      <label>Пароль</label><input name="password" type="password" required minlength="4" autocomplete="new-password">
+      <button class="btn" type="submit">Далее</button>
+      <div class="err" id="reg-err"></div>
+    </form>
+    <form id="login" hidden>
+      <label>Логин</label><input name="login" required autocomplete="username" placeholder="телефон или email">
+      <label>Пароль</label><input name="password" type="password" required autocomplete="current-password">
+      <button class="btn" type="submit">Войти</button>
+      <div class="err" id="login-err"></div>
+    </form>
+  </section>
+  <section id="profile" hidden>
+    <h1>Расскажите о себе</h1>
+    <div class="sub">По этим ответам AI подберёт людей, с которыми вам стоит познакомиться.</div>
+    <form id="anketa">
+      <div class="steps"><i class="on"></i><i class="on"></i></div>
+      <div class="row">
+        <div><label>Роль</label><input name="role" required placeholder="Backend-разработчик"></div>
+        <div><label>Опыт, лет</label><input name="experience" type="number" min="0" max="40" value="1"></div>
+      </div>
+      <label>Чем вы занимаетесь (стек, навыки)</label><input name="stack" required placeholder="Python, Figma, маркетинг">
+      <label>Интересы</label><input name="interests" placeholder="финтех, AI, стартапы">
+      <label>Цель на мероприятии</label>
+      <div class="goals" id="goals"></div>
+      <label>О себе</label><textarea name="about" placeholder="Пара предложений: кто вы и кого ищете"></textarea>
+      <button class="btn" type="submit">Готово — показать мои 5 знакомств</button>
+      <div class="err" id="anketa-err"></div>
+    </form>
+  </section>
+</main>
+<script>
+const GOALS = {job:"Найти работу", hire:"Нанять людей", find_mentor:"Найти ментора", mentor:"Стать ментором", cofounder:"Найти кофаундера", exchange:"Обмен опытом"};
+const qp = new URLSearchParams(location.search);
+const nextRaw = qp.get("next") || "/app";
+const next = /^\/(?!\/)/.test(nextRaw) ? nextRaw : "/app";
+let pendingName = "";
+const $ = id => document.getElementById(id);
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+$("goals").innerHTML = Object.entries(GOALS).map(([k, v], i) => `<label><input type="radio" name="goal" value="${k}" ${i === 0 ? "checked" : ""}>${v}</label>`).join("");
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+  $("reg").hidden = b.dataset.t !== "reg"; $("login").hidden = b.dataset.t !== "login";
+});
+async function post(url, body) {
+  const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  let d = {}; try { d = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(d.error || "Ошибка сервера, попробуйте ещё раз");
+  return d;
+}
+function step2() { $("auth").hidden = true; $("profile").hidden = false; window.scrollTo(0, 0); }
+$("reg").onsubmit = async e => {
+  e.preventDefault(); const f = e.target; $("reg-err").textContent = "";
+  try {
+    const d = await post("/api/register", {login: f.elements["login"].value, password: f.elements["password"].value, session_id: store.get("sid")});
+    store.set("sid", d.session_id); pendingName = f.elements["name"].value.trim();
+    if (d.has_profile) location.href = next; else step2();
+  } catch (x) { $("reg-err").textContent = x.message; }
+};
+$("login").onsubmit = async e => {
+  e.preventDefault(); const f = e.target; $("login-err").textContent = "";
+  try {
+    const d = await post("/api/login", {login: f.elements["login"].value, password: f.elements["password"].value});
+    store.set("sid", d.session_id);
+    if (d.has_profile) location.href = next; else step2();
+  } catch (x) { $("login-err").textContent = x.message; }
+};
+$("anketa").onsubmit = async e => {
+  e.preventDefault(); const f = e.target; $("anketa-err").textContent = "";
+  const split = s => s.split(/[,;]/).map(x => x.trim()).filter(Boolean);
+  if (!pendingName) { try { const me = await fetch(`/api/me?session_id=${encodeURIComponent(store.get("sid"))}`).then(r => r.json()); pendingName = (me.profile && me.profile.name) || me.login || ""; } catch (x) {} }
+  const profile = {name: pendingName || "Участник", role: f.elements["role"].value, experience: +f.elements["experience"].value || 0,
+    stack: split(f.elements["stack"].value), interests: split(f.elements["interests"].value), goal: f.querySelector("[name=goal]:checked").value,
+    about: f.elements["about"].value, slots: []};
+  try { await post("/api/recommend", {session_id: store.get("sid"), profile, lang: store.get("lang") || "ru"}); location.href = next; }
+  catch (x) { $("anketa-err").textContent = x.message; }
+};
+(async () => {
+  const sid = store.get("sid");
+  if (!sid) return;
+  try {
+    const me = await fetch(`/api/me?session_id=${encodeURIComponent(sid)}`).then(r => r.json());
+    if (me.account && me.exists) { location.replace(next); return; }
+    if (me.account && !me.exists) step2();
+  } catch (x) {}
+})();
+</script>
+</body>
+</html>

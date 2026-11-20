@@ -47,13 +47,14 @@
   .slot { margin-left:auto; font-size:13px; color:var(--ok); font-weight:600; }
   .empty { color:var(--muted); text-align:center; padding:60px 20px; }
   .info { color:var(--muted); font-size:13px; margin-bottom:12px; }
+  @media (max-width:760px){ main { padding:14px; gap:14px; } .panel { padding:16px; } .top { flex-wrap:wrap; } .score { margin-left:0; text-align:left; } .bars { grid-template-columns:1fr; } .slot { margin-left:0; } .langs button { padding:5px 8px; } }
   a.dash { color:var(--acc); font-size:14px; text-decoration:none; margin-right:12px; }
 </style>
 </head>
 <body>
 <header>
   <b style="display:flex;align-items:center;gap:10px;"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span style="color:#0B1E3F">TanysTap</span></b>
-  <div><a class="dash" href="/profile">Профиль</a><a class="dash" href="/dashboard" data-i="dash"></a><span class="langs"><button data-l="kk">ҚАЗ</button><button data-l="ru">РУС</button><button data-l="en">ENG</button></span></div>
+  <div><span class="langs"><button data-l="kk">ҚАЗ</button><button data-l="ru">РУС</button><button data-l="en">ENG</button></span></div>
 </header>
 <main>
   <form class="panel" id="f">
@@ -105,7 +106,7 @@ function applyLang(){
   document.querySelectorAll(".langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===lang));
   if(last) render(last);
 }
-document.querySelectorAll(".langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l; store.set("lang",lang); applyLang(); if(last) submit();});
+document.querySelectorAll(".langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l; store.set("lang",lang); applyLang(); window.ttNavSetLang&&ttNavSetLang(lang); if(last) submit();});
 
 $("#demo").onclick=()=>{
   const f=$("#f");
@@ -131,6 +132,15 @@ async function call(url,body){
   }catch(err){ $("#out").innerHTML=`<div class="panel empty">${T[lang].err}</div>`; }
 }
 $("#f").addEventListener("submit",submit);
+(async()=>{ try{
+  const r=await fetch(`/api/me?session_id=${encodeURIComponent(sid)}`).then(r=>r.json());
+  if(!r.exists) return; const p=r.profile, f=$("#f");
+  f.elements['name'].value=p.name||""; f.elements['role'].value=p.role||""; f.elements['experience'].value=p.experience??2;
+  f.elements['stack'].value=(p.stack||[]).join(", "); f.elements['interests'].value=(p.interests||[]).join(", ");
+  if(p.goal) f.elements['goal'].value=p.goal; f.elements['about'].value=p.about||"";
+  f.querySelectorAll('[name=slots]').forEach(c=>c.checked=(p.slots||[]).includes(c.value));
+  if(!new URLSearchParams(location.search).get("next")) submit();
+}catch(e){} })();
 
 function render(d){
   const t=T[lang];
@@ -171,7 +181,7 @@ async function writeTag(url,btn){
 }
 function metBox(list){
   const x=X[lang];
-  return `<div class="card"><div class="name">${x.metTitle} (${list.length})</div>${list.length?list.map(p=>`<div style="font-size:14px;margin:8px 0">${esc(p.name)} · ${esc(p.role)}${p.company?" · "+esc(p.company):""}${p.chat?` · <a href="/chat/${esc(p.id)}" style="color:var(--acc)">чат</a>`:""}</div>`).join(""):`<div class="meta">${x.metNone}</div>`}</div>`;
+  return `<div class="card"><div class="name">${x.metTitle} (${list.length})</div>${list.length?list.map(p=>`<div style="font-size:14px;margin:8px 0">${esc(p.name)} · ${esc(p.role)}${p.company?" · "+esc(p.company):""} · <a href="/p/${esc(p.id)}?view=1" style="color:var(--acc)">профиль</a>${p.chat?` · <a href="/chat/${esc(p.id)}" style="color:var(--acc)">чат</a>`:""}</div>`).join(""):`<div class="meta">${x.metNone}</div>`}</div>`;
 }
 function askReason(id){
   const t=T[lang];
@@ -181,5 +191,6 @@ function askReason(id){
 function fb(id,verdict,reason){ call("/api/feedback",{session_id:sid,target_id:id,verdict,reason}); }
 applyLang();
 </script>
+<script src="/static/nav.js"></script>
 </body>
 </html>

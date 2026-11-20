@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20120%20120%22%20width%3D%2230%22%20height%3D%2230%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Crect%20x%3D%2224%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2256%22%20width%3D%2236%22%20height%3D%2248%22%20rx%3D%2216%22%20fill%3D%22%230B1E3F%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Ccircle%20cx%3D%2278%22%20cy%3D%2236%22%20r%3D%2216%22%20fill%3D%22%232E63B0%22/%3E%3Cpath%20d%3D%22M32%2066%20Q60%20102%2088%2076%22%20fill%3D%22none%22%20stroke%3D%22%235B86C6%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M88%2066%20Q60%2094%2032%2080%22%20fill%3D%22none%22%20stroke%3D%22%238FB0E0%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<title>TanysTap — вход для организатора</title>
+<style>
+  :root { --ink:#0B1E3F; --muted:#5A6B8C; --line:#DDE3EE; --acc2:#EAF0FA; --ok:#2E7D5B; --bad:#B42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink); background:#fff; }
+  input, select, textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:15px; color:var(--ink); background:#fff; }
+  input:focus, select:focus, textarea:focus { outline:2px solid #2E63B0; outline-offset:-1px; border-color:#2E63B0; }
+  label { display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+  .btn { display:block; width:100%; margin-top:20px; padding:13px; border:0; border-radius:10px; background:var(--ink); color:#fff; font-size:15px; font-weight:600; cursor:pointer; text-align:center; text-decoration:none; }
+  .btn.ghost { background:var(--acc2); color:var(--ink); margin-top:10px; }
+  .err { color:var(--bad); font-size:14px; margin-top:12px; min-height:20px; }
+  @media (max-width:760px){ input, select, textarea { font-size:16px; } }
+  main { min-height:100vh; min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px 18px; background:#F6F8FC; }
+  .box { width:100%; max-width:400px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:28px 24px; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:20px; }
+  h1 { font-size:20px; margin:20px 0 4px; }
+  .sub { color:var(--muted); font-size:14px; line-height:1.5; }
+  a.back { display:block; text-align:center; margin-top:16px; color:var(--muted); font-size:14px; text-decoration:none; }
+</style>
+</head>
+<body>
+<main><form class="box" id="f">
+  <div class="logo"><svg viewBox="0 0 120 120" width="34" height="34" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg>TanysTap</div>
+  <h1>Кабинет организатора</h1>
+  <div class="sub">Вход только для команды мероприятия. Аккаунт создан заранее.</div>
+  <label>Логин</label><input name="login" required autocomplete="username">
+  <label>Пароль</label><input name="password" type="password" required autocomplete="current-password">
+  <button class="btn" type="submit">Войти</button>
+  <div class="err" id="err"></div>
+  <a class="back" href="/">← На главную</a>
+</form></main>
+<script>
+document.getElementById("f").onsubmit = async e => {
+  e.preventDefault(); const f = e.target, err = document.getElementById("err"); err.textContent = "";
+  const r = await fetch("/api/org/login", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({login: f.elements["login"].value, password: f.elements["password"].value})});
+  if (r.ok) location.href = "/dashboard";
+  else { let d = {}; try { d = await r.json(); } catch (x) {} err.textContent = d.error || "Не удалось войти"; }
+};
+</script>
+</body>
+</html>

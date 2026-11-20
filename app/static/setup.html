@@ -35,8 +35,8 @@
 </head>
 <body>
 <header>
-  <a class="brand" href="/"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></a>
-  <a href="/" class="noprint">← К подбору</a>
+  <a class="brand" href="/app"><svg viewBox="0 0 120 120" width="30" height="30" aria-hidden="true"><rect x="24" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><rect x="60" y="56" width="36" height="48" rx="16" fill="#0B1E3F"/><circle cx="42" cy="36" r="16" fill="#2E63B0"/><circle cx="78" cy="36" r="16" fill="#2E63B0"/><path d="M32 66 Q60 102 88 76" fill="none" stroke="#5B86C6" stroke-width="12" stroke-linecap="round"/><path d="M88 66 Q60 94 32 80" fill="none" stroke="#8FB0E0" stroke-width="12" stroke-linecap="round"/></svg><span>TanysTap</span></a>
+  <a href="/app" class="noprint back">← К подбору</a>
 </header>
 <main>
   <h1>Настройка бейджа</h1>
@@ -45,7 +45,7 @@
   <div id="noprofile" class="step hidden">
     <h2>Сначала анкета</h2>
     <p>Бейдж появится после заполнения анкеты. Заполните её на главной странице, а потом вернитесь сюда.</p>
-    <button onclick="location.href='/'">Заполнить анкету</button>
+    <button onclick="location.href='/app'">Заполнить анкету</button>
   </div>
 
   <div id="main" class="hidden">
@@ -158,5 +158,6 @@ $("verify").onclick = async () => {
 
 init();
 </script>
+<script src="/static/nav.js"></script>
 </body>
 </html>
