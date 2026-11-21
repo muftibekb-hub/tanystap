@@ -33,6 +33,8 @@
   .goals { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .goals label { margin:0; font-weight:500; font-size:14px; border:1px solid var(--line); border-radius:10px; padding:11px 10px; cursor:pointer; display:flex; gap:8px; align-items:center; }
   .goals input { width:auto; }
+  .goals.slots { grid-template-columns:repeat(4,1fr); }
+  .goals.slots label { justify-content:center; padding:9px 4px; font-size:13px; }
   .goals label:has(input:checked) { border-color:var(--ink); background:var(--acc2); }
   textarea { min-height:80px; resize:vertical; }
   [hidden] { display:none !important; }
@@ -76,6 +78,8 @@
       <label>Цель на мероприятии</label>
       <div class="goals" id="goals"></div>
       <label>О себе</label><textarea name="about" placeholder="Пара предложений: кто вы и кого ищете"></textarea>
+      <label>Свободное время для встреч 1:1</label>
+      <div class="goals slots" id="slots"></div>
       <button class="btn" type="submit">Готово — показать мои 5 знакомств</button>
       <div class="err" id="anketa-err"></div>
     </form>
@@ -90,6 +94,7 @@ const next = /^\/(?!\/)/.test(nextRaw) ? nextRaw : "/app";
 let pendingName = "";
 const $ = id => document.getElementById(id);
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+$("slots").innerHTML = ["11:00","11:30","12:00","13:30","14:00","14:30","15:00","16:00"].map(t => `<label><input type="checkbox" name="slot" value="${t}">${t}</label>`).join("");
 $("goals").innerHTML = Object.entries(GOALS).map(([k, v], i) => `<label><input type="radio" name="goal" value="${k}" ${i === 0 ? "checked" : ""}>${v}</label>`).join("");
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
@@ -133,7 +138,7 @@ $("anketa").onsubmit = async e => {
   if (!pendingName) { try { const me = await fetch(`/api/me?session_id=${encodeURIComponent(store.get("sid"))}`).then(r => r.json()); pendingName = (me.profile && me.profile.name) || me.login || ""; } catch (x) {} }
   const profile = {name: pendingName || "Участник", role: f.elements["role"].value, experience: +f.elements["experience"].value || 0,
     stack: split(f.elements["stack"].value), interests: split(f.elements["interests"].value), goal: f.querySelector("[name=goal]:checked").value,
-    about: f.elements["about"].value, slots: []};
+    about: f.elements["about"].value, slots: [...f.querySelectorAll("[name=slot]:checked")].map(c => c.value)};
   try { await post("/api/recommend", {session_id: store.get("sid"), profile, lang: store.get("lang") || "ru"}); location.href = next; }
   catch (x) { $("anketa-err").textContent = x.message; }
 };

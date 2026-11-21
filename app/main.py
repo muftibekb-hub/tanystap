@@ -446,6 +446,24 @@ def org_login():
     return jsonify({"ok": True})
 
 
+@app.post("/api/org/reset_password")
+def org_reset_password():
+    """Организатор задаёт участнику временный пароль. Старый пароль не показывается: он хранится только как хэш."""
+    if not web_session.get("org"):
+        return jsonify({"error": "organizer only"}), 403
+    body = request.get_json(force=True)
+    pid = str(body.get("id") or "")
+    with LOCK:
+        login = next((l for sid, l in ACC_BY_SID.items() if own_id(sid) == pid), None)
+        if not login or login not in ACCOUNTS:
+            return jsonify({"error": "У этого участника нет аккаунта"}), 404
+        temp = "".join(secrets.choice("23456789") for _ in range(6))
+        salt = secrets.token_hex(8)
+        ACCOUNTS[login].update(salt=salt, hash=_hash(temp, salt))
+        save_state()
+    return jsonify({"ok": True, "login": login, "password": temp})
+
+
 @app.post("/api/org/logout")
 def org_logout():
     web_session.pop("org", None)

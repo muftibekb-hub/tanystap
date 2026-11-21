@@ -360,6 +360,19 @@ function bindQr(root) {
     document.getElementById("zimg").src = qrSrc(p); document.getElementById("zname").textContent = p.name; document.getElementById("zurl").textContent = badgeUrl(p);
     document.getElementById("zoom").classList.add("on");
   });
+  root.querySelectorAll("[data-reset]").forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Точно сбросить?"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "Сбросить пароль"; }, 4000); return; }
+    b.dataset.armed = "";
+    const r = await fetch("/api/org/reset_password", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: b.dataset.reset})});
+    const j = await r.json().catch(() => ({}));
+    const box = root.querySelector(`[data-pw="${b.dataset.reset}"]`) || b.parentElement;
+    b.textContent = "Сбросить пароль";
+    if (!r.ok) { box.textContent = j.error || "Не удалось сбросить пароль"; return; }
+    box.innerHTML = `Новый пароль для <b>${esc(j.login)}</b>: <b style="font-size:16px;letter-spacing:2px;color:#0B1E3F">${esc(j.password)}</b> — скажите его участнику, он виден только сейчас.`;
+    document.getElementById("desk").dataset.sig = "";
+    setTimeout(() => { box.innerHTML = ""; document.getElementById("desk").dataset.sig = ""; renderDesk(); }, 60000);  // пароль виден минуту
+  });
   root.querySelectorAll("[data-map]").forEach(b => b.onclick = e => { e.stopPropagation(); select(b.dataset.map); document.getElementById("hall").scrollIntoView({behavior: "smooth", block: "center"}); });
 }
 document.getElementById("zoom").onclick = () => document.getElementById("zoom").classList.remove("on");
@@ -373,7 +386,7 @@ function renderDesk() {
   if (seenReg === null) seenReg = new Set(live.map(p => p.id));
   if (!rows.length) { box.innerHTML = `<div class="none">${live.length ? "Никого не найдено." : "Пока никто не зарегистрировался. Участники появятся здесь сразу после регистрации."}</div>`; return; }
   const sig = q + "|" + rows.map(p => p.id + p.name + p.avatar.length + p.goal).join(",") + "|" + Math.floor(Date.now() / 60000);
-  if (box.dataset.sig === sig) return;  // список не изменился — не перерисовываем QR-коды
+  if (box.dataset.sig === sig || box.querySelector("[data-pw] b")) return;  // список не изменился — не перерисовываем QR-коды
   box.dataset.sig = sig;
   const keep = box.scrollTop;
   box.innerHTML = rows.slice(0, 200).map(p => `<div class="reg ${seenReg.has(p.id) ? "" : "new"}">
@@ -382,7 +395,7 @@ function renderDesk() {
       <div class="rm">${p.login ? "@" + esc(p.login) + " · " : ""}${esc(p.role)}${p.company ? " · " + esc(p.company) : ""}</div>
       <div class="rm"><span class="dot" style="background:${GOAL_COLOR[p.goal]}"></span>${esc(D.goal_labels[p.goal])} · ${p.registered ? ago(p.registered) : "—"}</div>
       <div class="ru">${esc(badgeUrl(p))}</div>
-      <div class="ra"><button data-copy="${esc(p.id)}">Скопировать ссылку</button><a href="/dashboard/badge/${esc(p.id)}" target="_blank" rel="noopener">Печать бейджа</a><button data-map="${esc(p.id)}">На карте</button></div></div></div>`).join("");
+      <div class="ra"><button data-copy="${esc(p.id)}">Скопировать ссылку</button><a href="/dashboard/badge/${esc(p.id)}" target="_blank" rel="noopener">Печать бейджа</a><button data-map="${esc(p.id)}">На карте</button>${p.login ? `<button data-reset="${esc(p.id)}">Сбросить пароль</button>` : ""}</div><div class="rm" data-pw="${esc(p.id)}" style="white-space:normal"></div></div></div>`).join("");
   box.scrollTop = keep;
   bindQr(box);
   setTimeout(() => live.forEach(p => seenReg.add(p.id)), 8000);
